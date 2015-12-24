@@ -1,95 +1,19 @@
+var Piece = require('./piece.js');
+// console.log(Piece);
 var Quarto = (function() {
-  //Game Pieces
-  var Piece = function(shape, height, hollow, color) {
-      this.shape = shape;
-      this.color = color;
-      this.height = height;
-      this.hollow = hollow;
-    }
-    // Proper values are 0 & 1
-  Piece.prototype.shape = null;
-  Piece.prototype.height = null;
-  Piece.prototype.hollow = null;
-  Piece.prototype.color = null;
-
-  Piece.prototype.getProperties = function() {
-    return [this.shape, this.height, this.hollow, this.color];
-  }
-
-  Piece.prototype.isRound = function()  {
-    return this.shape == 1;
-  }
-
-  Piece.prototype.isSquare = function()  {
-    return this.shape == 0;
-  }
-
-  Piece.prototype.isTall = function()  {
-    return this.height == 1;
-  }
-
-  Piece.prototype.isShort = function()  {
-    return this.height == 0;
-  }
-
-  Piece.prototype.isHollow = function()  {
-    return this.hollow == 1;
-  }
-
-  Piece.prototype.isFilled = function()  {
-    return this.hollow == 0;
-  }
-
-  Piece.prototype.isDark = function()  {
-    return this.color == 1;
-  }
-
-  Piece.prototype.isLight = function()  {
-    return this.color == 0;
-  }
-
-
-  Piece.makeAllPieces = function() {
-    // shape,height,hollow,color
-    return [
-      //Light
-      new Piece(0, 0, 0, 0), //square short filled light  
-      new Piece(1, 0, 0, 0), //round short filled light  
-
-      new Piece(0, 1, 0, 0), //square tall filled light   
-      new Piece(1, 1, 0, 0), //round tall filled light
-
-      new Piece(0, 0, 1, 0), //square short hollow light
-      new Piece(1, 0, 1, 0), //round short hollow light
-
-      new Piece(0, 1, 1, 0), //square tall hollow light 
-      new Piece(1, 1, 0, 0), //round tall hollow light
-
-      //Dark
-      new Piece(0, 0, 0, 1), //square short filled dark
-      new Piece(1, 0, 0, 1), //round short filled dark
-
-      new Piece(0, 1, 0, 1), //square tall filled dark
-      new Piece(1, 1, 0, 1), //round tall filled dark
-
-      new Piece(0, 0, 1, 1), //square short hollow dark
-      new Piece(1, 0, 1, 1), //round short hollow dark
-
-      new Piece(0, 1, 1, 1), //square tall hollow dark
-      new Piece(1, 1, 1, 1), //round tall hollow dark
-    ];
-  }
 
   //GRID STUFF
 
-  function _getPieceInGrid(row, column) {
+  function _getPiece(row, column) {
 
     var limit = this.grid[0].length;
 
     if (row >= limit || column >= limit) {
       throw new Error('coordinates are outside grid dimensions');
     }
-    return this.grid[row][column];
+    console.log(ṭhis.grid);
+    return null;
+    // return this.grid[row][column];
   };
 
   function _givePiece(index, properties) {
@@ -98,14 +22,15 @@ var Quarto = (function() {
       //find by properties instead 
     }
 
-    var piece = this.pieces[index];
-
-    //do something better than this...
-    delete this.pieces[index];
+    var piece = this.pieces.splice(index, 1).shift();
     return piece;
   }
 
   function _setPiece(row, column, piece) {
+    if (piece.constructor !== Piece) {
+      throw new Error('what is this shit you are giving me man?!')
+    }
+    //TODO Error handling
     // console.log(this);
     return this.grid[row][column] = piece;
   }
@@ -288,110 +213,31 @@ var Quarto = (function() {
     //check diagoal
   }
 
-  return {
-    phase: 0, //0,1 => give piece, play piece
-    pieces: Piece.makeAllPieces(),
-    players: [],
-    grid: [
+  _startGame = function() {
+    this.pieces = Piece.makeAllPieces();
+    this.phase = 0;
+    this.grid = [
       new Array(4),
       new Array(4),
       new Array(4),
       new Array(4)
-    ],
-    getPieceInGrid: _getPieceInGrid,
+    ];
+    return this;
+    // this.currentPlayer = 1;
+  }
+
+  return {
+    // this.currentPlayer:1;
+    start: _startGame,
+    phase: 0, //0,1 => give piece, play piece
+    pieces: null,
+    // players: [],
+    grid: null,
+    getPieceInGrid: _getPiece,
     givePiece: _givePiece,
     setPieceToGrid: _setPiece,
-    isQuarto: _isQuarto
+    isQuarto: _isQuarto,
   };
 
 })();
-
-
-var QuartoUI = (function(Quarto) {
-
-  //events
-  // Game starts
-  // Player selects piece
-  // Player plays piece
-  // Player declares Quarto
-
-  return {
-    lastMove: {
-      row: null,
-      column: null,
-      piece: null
-    },
-    init: function() {
-
-      //Bind events
-      //gamePieces.on('click','.piece',givePiece)
-
-      ([].slice.call(
-        document.querySelectorAll('.js-grid-cell')
-      )).forEach(function(cell) {
-        //TODO: bind only one eventListener to grid, find target from event object
-        cell.addEventListener('click', this.setPiece, true);
-      }, this);
-
-      ([].slice.call(
-        document.querySelectorAll('.js-piece')
-      )).forEach(function(cell) {
-        //TODO: bind only one eventListener to grid, find target from event object
-        cell.addEventListener('click', this.givePiece, true);
-      }, this);
-
-
-
-
-      //quartoButton.on('click',isQuarto)
-    },
-    givePiece: function(e) {
-      console.log(e);
-      if (Quarto.phase !== 0) {
-        return false;
-      }
-      Quarto.phase = 1;
-      return this;
-      //Move piece from piecebox to playbox
-    },
-    setPiece: function(e) {
-      console.log(e);
-      // if (Quarto.phase !== 1) {
-      //   return false;
-      // }
-
-      var coords = e.target.id.split('-');
-      coords.shift(); //discard 'cell'
-      //TODO better grid tokenizing. Not bad but could be better.
-
-      console.log(coords);
-      //move piece from playbox to grid
-    },
-    shoutQuarto: function() {
-      if (Quarto.isQuarto(this.lastMove.row, this.lastMove.column, this.lastMove.piece)) {
-        if (confirm('You Win!')) {
-          window.location.reload();
-        };
-
-      }
-      return this;
-    }
-
-  };
-
-})(Quarto);
-
-document.addEventListener("DOMContentLoaded", function(event) {
-  QuartoUI.init();
-});
-
-
-// Quarto.setPieceToGrid(0, 0, Quarto.givePiece(1));
-// Quarto.setPieceToGrid(1, 0, Quarto.givePiece(4));
-// Quarto.setPieceToGrid(2, 0, Quarto.givePiece(6));
-// var lastPiece = Quarto.givePiece(8);
-// Quarto.setPieceToGrid(3, 0, lastPiece);
-
-// console.log(
-//   Quarto.isQuarto(lastPiece, 3, 0)
-// );
+module.exports = Quarto;
