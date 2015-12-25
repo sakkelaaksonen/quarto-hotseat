@@ -1,5 +1,5 @@
 {
-  "name": "quarto-proto",
+  "name": "quarto",
   "version": "1.0.0",
   "description": "HMTL Quarto game",
   "main": "index.html",
@@ -10,8 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "chai": "^3.4.1",
-    "jade": "^1.11.0",
-    "mocha": "^2.3.4",
-    "underscore": "^1.8.3"
+    "mocha": "^2.3.4"  
   }
 }

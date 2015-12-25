@@ -1,4 +1,9 @@
+//TODO: what is this verbose shit i wrote? 
+//All we need is function(a,b,c,d){return [a,b,c,d]}
+//Once this is done,it's time to start code golfing this excessiveness.
+
 var Piece = function(shape, height, hollow, color) {
+    
     this.shape = shape;
     this.color = color;
     this.height = height;
@@ -10,40 +15,48 @@ Piece.prototype.height = null;
 Piece.prototype.hollow = null;
 Piece.prototype.color = null;
 
+Piece.prototype.getPropertyString = function(){
+  return [
+  !!this.shape ? 'round' : 'square',
+  !!this.height ? 'tall' : 'short',
+  !!this.hollow ? 'hollow' : 'filled',
+  !!this.color ? 'dark' : 'light'
+  ].join(' ');
+}
 Piece.prototype.getProperties = function() {
   return [this.shape, this.height, this.hollow, this.color];
 }
 
 Piece.prototype.isRound = function()  {
-  return this.shape == 1;
+  return this.shape === 1;
 }
 
 Piece.prototype.isSquare = function()  {
-  return this.shape == 0;
+  return this.shape === 0;
 }
 
 Piece.prototype.isTall = function()  {
-  return this.height == 1;
+  return this.height === 1;
 }
 
 Piece.prototype.isShort = function()  {
-  return this.height == 0;
+  return this.height === 0;
 }
 
 Piece.prototype.isHollow = function()  {
-  return this.hollow == 1;
+  return this.hollow === 1;
 }
 
 Piece.prototype.isFilled = function()  {
-  return this.hollow == 0;
+  return this.hollow === 0;
 }
 
 Piece.prototype.isDark = function()  {
-  return this.color == 1;
+  return this.color === 1;
 }
 
 Piece.prototype.isLight = function()  {
-  return this.color == 0;
+  return this.color === 0;
 }
 
 
@@ -79,4 +92,4 @@ Piece.makeAllPieces = function() {
 }
 
 Piece.NOT_A_PIECE = 'what is this shit you are giving me man?!';
-module.exports = Piece;
+if (typeof module !== 'undefined') module.exports = Piece;

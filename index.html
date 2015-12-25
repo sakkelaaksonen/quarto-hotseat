@@ -6,115 +6,13 @@
   <script src="piece.js"></script>
   <script src="quarto-engine.js"></script>
   <script src="quarto-ui.js"></script>
-  <style>
- 
-  .grid {
-    margin:3rem;
-    height:600px;
-    width:600px;
-    border:1px solid green;
-    box-sizing: border-box;
-  }
-
-  .grid-cell {
-    height:25%;
-    width: 25%;
-    float: left;
-    border:1px solid red;
-    box-sizing: border-box;
-  }
-
-  .grid-cell:hover {
-    background: green;
-  }
-
-/*
-pieces
-*/
-.pieces {
-  width: 100%;
-  overflow:auto;
-}
-
-.piece {
-  position: relative;
-  float:left;
-  margin: 1rem;
-  border:1px solid transparent;
-}
-
-.piece:hover {
-  border-color:#ddd;
-}
-
-.dark {
-  background:#999;
-}
-
-.light {
-  background:#ccc;
-}
-
-.square {}
-
-.round {
-  border-radius:30px;
-}
-
-.full {}
-
-.hollow:after  {
-  content:' ';
-  width:50%;
-  height:50%;
-  background:#333;
-  left:25%;
-  top:25%;
-  border-radius: 5rem;
-  position: absolute;
-}
-
-/*2D-prototype is "big " and "small" */ 
-
-.short {
-  width:4rem;
-  height: 4rem;
-}
-  
-.tall {
-  width:5rem;
-  height:5rem;
-}
-
-  </style>
+  <link rel="stylesheet" href="quarto.css">
 </head>
 <body>
-  
-  <div class="pieces" id="js-pieces">
-    <div class="piece js-piece dark tall full round"></div>
-    <div class="piece js-piece light tall full round"></div>
-
-    <div class="piece js-piece dark short full round"></div>
-    <div class="piece js-piece light short full round"></div>
-
-    <div class="piece js-piece dark tall full square"></div>
-    <div class="piece js-piece light tall full square"></div>
-
-    <div class="piece js-piece dark short full square"></div>
-    <div class="piece js-piece light short full square"></div>
-
-    <div class="piece js-piece dark tall hollow round"></div>
-    <div class="piece js-piece light tall hollow round"></div>
-
-    <div class="piece js-piece dark short hollow round"></div>
-    <div class="piece js-piece light short hollow round"></div>
-
-    <div class="piece js-piece dark tall hollow square"></div>
-    <div class="piece js-piece light tall hollow square"></div>
-
-    <div class="piece js-piece dark short hollow square"></div>
-    <div class="piece js-piece light short hollow square"></div>
-  </div>
+  <!--this div must have no whitespace or anything else
+  TODO: less fragile indexing method
+   -->
+  <div class="pieces" id="js-pieces"></div>
 
   <div id="js-grid" class="grid">
  
@@ -136,14 +34,14 @@ pieces
     <div class="grid-cell js-grid-cell" id="cell-3-0"></div>
     <div class="grid-cell js-grid-cell" id="cell-3-1"></div>
     <div class="grid-cell js-grid-cell" id="cell-3-2"></div>
-    <div class="grid-cell js-grid-cell" id="cell-3-0"></div>
+    <div class="grid-cell js-grid-cell" id="cell-3-3"></div>
  
   </div>
   
-  <div class="playbox" id="js-playbox">
-    
-
-  </div>
+  <div class="playbox" id="js-playbox"></div>
+<p>
+  <button id="js-quarto">Quarto</button>
+</p>
 
 </body>
 </html>

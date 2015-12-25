@@ -1,17 +1,19 @@
+//node or browser? everything goes as long as we have game pieces
 
-if(!Piece && typeof require !== 'undefined' ) {
+if (!Piece && typeof require !== 'undefined') {
   var Piece = require('./piece.js');
 }
 
-
-if(!Piece ) {
+if (!Piece) {
   var msg = 'We need some game pieces in order to play';
   throw new Error(msg);
-  if(alert) {
+  if (alert) {
     alert(msg);
   }
 }
-// console.log(Piece);
+
+
+//The game engine
 var Quarto = (function() {
 
   //GRID STUFF
@@ -24,8 +26,8 @@ var Quarto = (function() {
       throw new Error('coordinates are outside grid dimensions');
     }
     console.log(ṭhis.grid);
-    return null;
-    // return this.grid[row][column];
+    // return null;
+    return this.grid[row][column];
   };
 
   function _givePiece(index, properties) {
@@ -39,11 +41,18 @@ var Quarto = (function() {
   }
 
   function _setPiece(row, column, piece) {
+    //why did I write this? It's just an ANTIPATTERN
+    //TODO: Get rid of it man. I don't want to wrap everything to try/catch 
+    //There is nothing the user can do to break this in any way.
     if (piece.constructor !== Piece) {
       throw new Error(Piece.NOT_A_PIECE)
     }
-    //TODO Error handling
-    // console.log(this);
+
+    if (this.grid[row][column] !== undefined) {
+      console.log('That slot is already populated. Try another one');
+      return false;
+    }
+
     return this.grid[row][column] = piece;
   }
 
@@ -51,6 +60,7 @@ var Quarto = (function() {
 
   //TODO: optimize this. 
   //Im sure there is a nice very basic mathematical trick to this...
+  //Also, expose these methods for testing
   function _isDarkSet(row) {
     var counter = 0;
     for (i = 0; i < row.length; i++) {
@@ -152,13 +162,13 @@ var Quarto = (function() {
       _isShortSet(set) ||
       _isTallSet(set) ||
       _isFilledSet(set) ||
-      _isHollowSet(set) 
-      );
+      _isHollowSet(set)
+    );
   }
 
   function _isQuarto(lastPiece, row, column) {
-
-    if(!lastPiece || lastPiece.constructor !== Piece) {
+    console.log(this.grid);
+    if (!lastPiece || lastPiece.constructor !== Piece) {
       throw new Error(Piece.NOT_A_PIECE)
     }
 
@@ -166,7 +176,7 @@ var Quarto = (function() {
     var affectedRow = this.grid[row];
     // console.log('row', affectedRow);
 
-    if ( _setIsQuarto(affectedRow) ) {
+    if (_setIsQuarto(affectedRow)) {
       console.log('Row Quarto');
       return true;
     }
@@ -178,7 +188,7 @@ var Quarto = (function() {
       this.grid[3][column]
     ];
 
-    if ( _setIsQuarto(affectedColumn) ) {
+    if (_setIsQuarto(affectedColumn)) {
       console.log('Column Quarto');
       return true;
     }
@@ -186,12 +196,8 @@ var Quarto = (function() {
     //Still here? Must be a diagonal row then.
     var affectedDiagonal;
 
-    if (
-      //descending diagonal
-      //00,11,22,33
-      ( row === column ) 
-    ) {
-    //descending
+    if (row === column) {
+      //descending
       affectedDiagonal = [
         this.grid[0][0],
         this.grid[1][1],
@@ -202,18 +208,13 @@ var Quarto = (function() {
       // ascending
       affectedDiagonal = [
         this.grid[3][0],
-        this.grid[1][2],
         this.grid[2][1],
-        this.grid[3][0]
+        this.grid[1][2],
+        this.grid[0][3]
       ];
     }
 
-    if (
-      _isLightSet(affectedDiagonal) ||
-      _isDarkSet(affectedDiagonal) ||
-      _isRoundSet(affectedDiagonal) ||
-      _isSquareSet(affectedDiagonal)
-    ) {
+    if (_setIsQuarto(affectedDiagonal)) {
       console.log('Diagonal Quarto');
       return true;
     }
@@ -232,22 +233,29 @@ var Quarto = (function() {
     ];
     this.quartoString = null;
     return this;
-    // this.currentPlayer = 1;
   }
 
   return {
-    // this.currentPlayer:1;
     start: _startGame,
     phase: 0, //0,1 => give piece, play piece
     pieces: null,
-    // players: [],
     grid: null,
     getPieceInGrid: _getPiece,
     givePiece: _givePiece,
     setPieceToGrid: _setPiece,
     isQuarto: _isQuarto,
-    quartoString:null
+    evaluators: {
+      isLightSet: _isLightSet,
+      isDarkSet: _isDarkSet,
+      isRoundSet: _isRoundSet,
+      isSquareSet: _isSquareSet,
+      isShortSet: _isShortSet,
+      isTallSet: _isTallSet,
+      isFilledSet: _isFilledSet,
+      isHollowSet: _isHollowSet
+    }
   };
 
 })();
-module.exports = Quarto;
+
+if (typeof module !== 'undefined') module.exports = Quarto;

@@ -1,5 +1,5 @@
-
 var QuartoUI = (function(Quarto) {
+
 
   //events
   // Game starts
@@ -8,56 +8,101 @@ var QuartoUI = (function(Quarto) {
   // Player declares Quarto
 
   return {
+    selectors: {
+      playbox: '#js-playbox',
+      grid: '#js-grid',
+      pieces: '#js-pieces',
+      button: '#js-quarto'
+    },
     lastMove: {
       row: null,
       column: null,
-      piece: null
+      piece: null,
+      // pieceIndex:null,
     },
     init: function() {
-
+      Quarto.start();
       //Bind events
       //gamePieces.on('click','.piece',givePiece)
+      var piecesDOM = document
+        .querySelector(this.selectors.pieces);
+      
+        piecesDOM.addEventListener('click', this.givePiece.bind(this), true);
+        Quarto.pieces.map(function(piece){
+          var pieceDOM = document.createElement('div');
+          pieceDOM.className = 'piece js-piece ' + piece.getPropertyString();
+          piecesDOM.appendChild(pieceDOM);
+        });
+
       document
-        .querySelector('#js-pieces')
-
-        .addEventListener('click', this.givePiece, true);
-
+        .querySelector(this.selectors.grid)
+        .addEventListener('click', this.setPiece.bind(this), true);
 
       document
-        .querySelector('#js-grid')
-        .addEventListener('click', this.setPiece, true);
+        .querySelector(this.selectors.button)
+        .addEventListener('click',this.shoutQuarto.bind(this),true);
 
-      //quartoButton.on('click',isQuarto)
+      
     },
     givePiece: function(e) {
-      console.log(e);
+      //Move piece from piecebox to playbox
+      // console.log(e);
+      var thePiece = e.originalTarget;
       if (Quarto.phase !== 0) {
         console.log('Set your piece first...');
         return false;
       }
+
+
+      var pieceIndex = 0;
+      var sibling = thePiece; //Just a temp var
+      while( (sibling = sibling.previousSibling) != null ) {
+        // console.log(pieceIndex, child);
+        pieceIndex++;
+      }
+      // console.log(pieceIndex);
+      document
+        .querySelector(this.selectors.playbox)
+        .appendChild(thePiece);
+
+      this.lastMove.piece = Quarto.givePiece(pieceIndex);
       Quarto.phase = 1;
+
       return this;
-      //Move piece from piecebox to playbox
+      
     },
     setPiece: function(e) {
-      console.log(e);
+      
       if (Quarto.phase !== 1) {
         console.log('Give a piece to player first...');
         return false;
       }
 
-      var coords = e.target.id.split('-');
+      var theSlot = e.originalTarget;
+      var thePiece = document.querySelector(this.selectors.playbox).children.item(0);
+      var coords = theSlot.id.split('-');
       coords.shift(); //discard 'cell'
-      //TODO better grid tokenizing. Not bad but could be better.
-
-      console.log(coords);
-      Quarto.phase = 0;
+      //TODO better grid tokenizer. Not bad but could be better.
+      this.lastMove.row = coords.shift();
+      this.lastMove.column = coords.shift();
       //move piece from playbox to grid
+      theSlot.appendChild(thePiece);
+      Quarto.setPieceToGrid(this.lastMove.row, this.lastMove.column, this.lastMove.piece); 
+      Quarto.phase = 0;
+      return this;
+
     },
     shoutQuarto: function() {
-      if (Quarto.isQuarto(this.lastMove.row, this.lastMove.column, this.lastMove.piece)) {
+      console.log(this.lastMove)
+      if (Quarto.isQuarto(this.lastMove.piece,this.lastMove.row, this.lastMove.column )) {
         if (confirm('You Win!')) {
+          //easy way out...
           window.location.reload();
+
+  
+          //TODO
+          // QuartoUI.reset/init/whatever();
+          //  =>  Quarto.start()
         };
 
       }

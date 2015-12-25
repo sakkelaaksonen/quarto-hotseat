@@ -1,0 +1,82 @@
+.grid {
+    margin:3rem;
+    height:600px;
+    width:600px;
+    border:1px solid green;
+    box-sizing: border-box;
+    float: left;
+  }
+
+  .grid-cell {
+    height:25%;
+    width: 25%;
+    float: left;
+    border:1px solid red;
+    box-sizing: border-box;
+  }
+
+  .grid-cell:hover {
+    background: green;
+  }
+
+
+.playbox {
+  float: left;
+}
+/*
+pieces
+*/
+.pieces {
+  width: 100%;
+  overflow:auto;
+}
+
+.piece {
+  position: relative;
+  float:left;
+  margin: 1rem;
+  border:1px solid transparent;
+}
+
+.piece:hover {
+  border-color:#ddd;
+}
+
+.dark {
+  background:#999;
+}
+
+.light {
+  background:#ccc;
+}
+
+.square {}
+
+.round {
+  border-radius:50px;
+}
+
+.full {}
+
+.hollow:after  {
+  content:' ';
+  width:50%;
+  height:50%;
+  background:#333;
+  left:25%;
+  top:25%;
+  border-radius: 5rem;
+  position: absolute;
+}
+
+/*2D-prototype is "big " and "small" */ 
+
+.short {
+  width:4rem;
+  height: 4rem;
+}
+  
+.tall {
+  width:5rem;
+  height:5rem;
+}
