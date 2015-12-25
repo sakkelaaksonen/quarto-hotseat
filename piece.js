@@ -78,4 +78,5 @@ Piece.makeAllPieces = function() {
   ];
 }
 
+Piece.NOT_A_PIECE = 'what is this shit you are giving me man?!';
 module.exports = Piece;
