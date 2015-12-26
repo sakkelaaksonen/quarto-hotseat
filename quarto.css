@@ -1,33 +1,55 @@
+body{
+  background:#000;
+}
+
+
+
+div {
+  box-sizing:border-box;
+}
+
+.grid-container {
+  border-radius:10000px;
+  border:2px solid white;
+  float: left;
+  padding:3rem;
+  width:49%;
+  
+}
+
 .grid {
-    margin:3rem;
-    height:600px;
-    width:600px;
-    border:1px solid green;
-    box-sizing: border-box;
+    margin:4rem;
+    height:420px;
+    width:420px;
     float: left;
   }
 
   .grid-cell {
-    height:25%;
-    width: 25%;
+    height:24%;
+    width: 24%;
+    margin:0 0 1% 1%;
     float: left;
-    border:1px solid red;
-    box-sizing: border-box;
+    border:1px solid white;
+    border-radius:100px;
+    background-color: rgba(255,255,255,0.1);
   }
 
   .grid-cell:hover {
-    background: green;
+    background: rgba(255,120,220,0.2);
   }
 
 
 .playbox {
   float: left;
-}
+/*  width: 48%;
+*/}
 /*
 pieces
 */
 .pieces {
-  width: 100%;
+  width: 49%;
+  /*margin:0 0 0 20%;*/
+  padding:0 0 0 3%;
   overflow:auto;
 }
 
@@ -36,6 +58,7 @@ pieces
   float:left;
   margin: 1rem;
   border:1px solid transparent;
+
 }
 
 .piece:hover {
@@ -43,11 +66,11 @@ pieces
 }
 
 .dark {
-  background:#999;
+  background:#444;
 }
 
 .light {
-  background:#ccc;
+  background:#eee;
 }
 
 .square {}
@@ -69,8 +92,6 @@ pieces
   position: absolute;
 }
 
-/*2D-prototype is "big " and "small" */ 
-
 .short {
   width:4rem;
   height: 4rem;
@@ -79,4 +100,18 @@ pieces
 .tall {
   width:5rem;
   height:5rem;
+}
+
+.button-container {
+  float: left;
+  margin:4rem 0 4rem 4rem;
+  width: 40%;
+}
+
+.button-container button {
+  display: block;
+  height: 3rem;
+  float: left;
+  width: 90%;
+  margin: 0 auto;
 }

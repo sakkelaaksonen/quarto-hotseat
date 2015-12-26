@@ -108,8 +108,8 @@ var Quarto = (function() {
   }
 
   function _isTallSet(row) {
-    33
     var counter = 0;
+
     for (i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isTall()) {
         counter++;

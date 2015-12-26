@@ -17,7 +17,7 @@ var QuartoUI = (function(Quarto) {
     lastMove: {
       row: null,
       column: null,
-      piece: null,
+      piece: null
       // pieceIndex:null,
     },
     init: function() {
