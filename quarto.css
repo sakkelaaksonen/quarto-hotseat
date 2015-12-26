@@ -9,19 +9,21 @@ div {
 }
 
 .grid-container {
-  border-radius:10000px;
-  border:2px solid white;
+  /*border-radius:10000px;*/
+  /*border:2px solid white;*/
   float: left;
-  padding:3rem;
+  /*padding:3rem;*/
   width:49%;
   
 }
 
 .grid {
     margin:4rem;
-    height:420px;
-    width:420px;
+    height:30rem;
+    width:30rem;
     float: left;
+    -moz-perspective:2000px;
+    transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg);
   }
 
   .grid-cell {
@@ -29,9 +31,11 @@ div {
     width: 24%;
     margin:0 0 1% 1%;
     float: left;
+    position: relative;
     border:1px solid white;
     border-radius:100px;
     background-color: rgba(255,255,255,0.1);
+    
   }
 
   .grid-cell:hover {
@@ -114,4 +118,11 @@ pieces
   float: left;
   width: 90%;
   margin: 0 auto;
+}
+
+
+.grid-cell .piece {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
 }

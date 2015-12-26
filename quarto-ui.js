@@ -46,8 +46,14 @@ var QuartoUI = (function(Quarto) {
     },
     givePiece: function(e) {
       //Move piece from piecebox to playbox
-      // console.log(e);
+      console.log(e);
+
       var thePiece = e.originalTarget;
+      console.log(thePiece.className);
+      if(! /js-piece/.test(thePiece.className)) {
+        console.log('not a game piece');
+        return false;
+      }
       if (Quarto.phase !== 0) {
         console.log('Set your piece first...');
         return false;
@@ -57,7 +63,7 @@ var QuartoUI = (function(Quarto) {
       var pieceIndex = 0;
       var sibling = thePiece; //Just a temp var
       while( (sibling = sibling.previousSibling) != null ) {
-        // console.log(pieceIndex, child);
+        // console.log(pieceIndex, sibling);
         pieceIndex++;
       }
       // console.log(pieceIndex);
