@@ -1,7 +1,13 @@
 body{
   background:#000;
+  color:white;
+  font-family: sans-serif;
 }
 
+h2 {display: inline-block;}
+.root {
+  min-width:920px;
+} 
 
 
 div {
@@ -11,7 +17,7 @@ div {
 .grid-container {
   /*border-radius:10000px;*/
   /*border:2px solid white;*/
-  float: left;
+  /*float: left;*/
   /*padding:3rem;*/
 
   width:49%;
@@ -20,59 +26,69 @@ div {
 
 .grid {
     /*margin:4rem;*/
-    height:30rem;
-    width:30rem;
+    height:40rem;
+    width:40rem;
     float: left;
-    -moz-perspective:2000px;
+    perspective:2000px;
     transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) translateX(120px) translateZ(80px);
   }
 
-  .grid-cell {
-    height:24%;
-    width: 24%;
-    margin:0 0 1% 1%;
-    float: left;
-    position: relative;
-    border:1px solid white;
-    border-radius:100px;
-    background-color: rgba(255,255,255,0.1);
-    
-  }
+.grid-cell {
+  height:24%;
+  width: 24%;
+  margin:0 0 1% 1%;
+  float: left;
+  position: relative;
+  border:1px solid white;
+  border-radius:100px;
+  background-color: rgba(255,255,255,0.1);
+  
+}
 
-  .grid-cell:hover {
-    background: rgba(255,120,220,0.2);
-  }
+.grid-cell:hover {
+  background: rgba(255,120,220,0.2);
+}
 
 
 .playbox {
-  float: right;
   border:1px solid #ccc;
   padding:2rem;
   width:8rem;
   height:8rem;
-  position: relative;
-  right: 4rem;
+  position: absolute;
+  left: 42rem;
   margin-top:3rem;
+  perspective:2000px;
+  transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;
 }
 
 .pieces {
-  width: 100%;
+  min-width:920px;
+  /*width: 100%;*/
   /*margin:0 0 0 20%;*/
   padding:0 0 0,5rem 0;
-  overflow:auto;
+  height:6rem;
+  /*overflow-x: scroll;*/
+
+  /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
 }
 
 .piece {
   position: relative;
-  float:left;
+  display: inline-block;
   margin: 0.3rem;
-  border:1px solid transparent;
-
+  border:3px solid transparent;
+  /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
 }
 
-.piece:hover {
+.dark.piece:hover {
   border-color:#ddd;
 }
+
+.light.piece:hover {
+  border-color:#faf;
+}
+
 
 .dark {
   background:#444;
@@ -82,7 +98,9 @@ div {
   background:#eee;
 }
 
-.square {}
+.square {
+  border-radius:3px;
+}
 
 .round {
   border-radius:50px;
@@ -94,7 +112,7 @@ div {
   content:' ';
   width:50%;
   height:50%;
-  background:#333;
+  background:rgba(0,0,0,0.5);
   left:25%;
   top:25%;
   border-radius: 5rem;
@@ -112,19 +130,23 @@ div {
 }
 
 .button-container {
- position: absolute;
-  bottom:6rem;
-  right:6rem;
-  /*margin:4rem 0 4rem 4rem;*/
-  width: 20%;
+
 }
 
-.button-container button {
-  display: block;
-  height: 3rem;
-  float: left;
-  width: 90%;
-  margin: 0 auto;
+.button-container .button {
+  /*display: block;*/
+  /*height: 2rem;*/
+  /*float: left;*/
+  /*width: 15rem;*/
+  /*margin: 0 auto;*/
+  padding:1rem 3rem;
+  text-align: center;
+  border:1px solid white;
+  background-color:white;
+  color:black;
+  font-size:1rem;
+  float: right;
+  margin:0 0.5rem;
 }
 
 

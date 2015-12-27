@@ -1,6 +1,15 @@
 //TODO: what is this verbose shit i wrote? 
 //All we need is function(a,b,c,d){return [a,b,c,d]}
 //Once this is done,it's time to start code golfing this excessiveness.
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
 
 var Piece = function(shape, height, hollow, color) {
     
@@ -62,7 +71,7 @@ Piece.prototype.isLight = function()  {
 
 Piece.makeAllPieces = function() {
   // shape,height,hollow,color
-  return [
+  return shuffleArray([
     //Light
     new Piece(0, 0, 0, 0), //square short filled light  
     new Piece(1, 0, 0, 0), //round short filled light  
@@ -88,7 +97,7 @@ Piece.makeAllPieces = function() {
 
     new Piece(0, 1, 1, 1), //square tall hollow dark
     new Piece(1, 1, 1, 1), //round tall hollow dark
-  ];
+  ]);
 }
 
 Piece.NOT_A_PIECE = 'what is this shit you are giving me man?!';
