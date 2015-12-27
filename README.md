@@ -6,7 +6,7 @@ Simple Quarto implementation. Play Quarto with friends on same computer.
 
 ## How to play
 
-Read [https://en.wikipedia.org/wiki/Quarto_(board_game)](Quarto Rules)
+Read [Quarto Rules](https://en.wikipedia.org/wiki/Quarto_%28board_game%29)
 
 **Click** on a game piece to select the next piece to be played.
 
