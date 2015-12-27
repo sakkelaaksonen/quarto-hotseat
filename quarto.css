@@ -28,7 +28,7 @@ div { box-sizing:border-box; }
   margin:0 0 1% 1%;
   float: left;
   position: relative;
-  border:1px solid white;
+  border:2px solid white;
   border-radius:100px;
   background-color: rgba(255,255,255,0.1);
   
@@ -40,7 +40,7 @@ div { box-sizing:border-box; }
 
 
 .playbox {
-  border:1px solid #ccc;
+  border:2px solid #ccc;
   padding:2rem;
   width:8rem;
   height:8rem;
