@@ -50,10 +50,15 @@ var QuartoUI = (function(Quarto) {
     },
     givePiece: function(e) {
       //Move piece from piecebox to playbox
-      console.log(e);
+      
+      // console.log(e);
+      if(this.gameOver) {
+        return false;
+      }
 
       var thePiece = e.originalTarget;
-      console.log(thePiece.className);
+      // console.log(thePiece.className);
+      
       if(! thePiece.className.contains(this.selectors.piece.substr(1)) ) {
         console.log('not a game piece');
         return false;
@@ -82,6 +87,9 @@ var QuartoUI = (function(Quarto) {
       
     },
     setPiece: function(e) {
+       if(this.gameOver) {
+        return false;
+      }
       
       if (Quarto.phase !== 1) {
         console.log('Give a piece to player first...');
