@@ -4,28 +4,17 @@ body{
   font-family: sans-serif;
 }
 
-h2 {display: inline-block;}
-.root {
-  min-width:920px;
-} 
+h2 {display: inline-block; }
+.root {  min-width:920px; } 
 
-
-div {
-  box-sizing:border-box;
-}
+div { box-sizing:border-box; }
 
 .grid-container {
-  /*border-radius:10000px;*/
-  /*border:2px solid white;*/
-  /*float: left;*/
-  /*padding:3rem;*/
 
-  width:49%;
   
 }
 
 .grid {
-    /*margin:4rem;*/
     height:40rem;
     width:40rem;
     float: left;
@@ -134,11 +123,7 @@ div {
 }
 
 .button-container .button {
-  /*display: block;*/
-  /*height: 2rem;*/
-  /*float: left;*/
-  /*width: 15rem;*/
-  /*margin: 0 auto;*/
+ text-decoration: none;
   padding:1rem 3rem;
   text-align: center;
   border:1px solid white;
@@ -155,4 +140,20 @@ div {
   margin: auto;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
+}
+
+.instructions.play .play-text {
+  display: inline-block;
+}
+
+.instructions.play .select-text {
+  display: none;
+}
+
+.instructions.select .play-text {
+  display: none;
+}
+
+.instructions.select .select-text {
+ display: inline-block;
 }

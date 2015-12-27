@@ -14,7 +14,9 @@ var QuartoUI = (function(Quarto) {
       pieces: '#js-pieces',
       button: '#js-quarto',
       gridCell:'.js-grid-cell',
-      piece: '.js-piece'
+      piece: '.js-piece',
+      text:'#js-instructions'
+
     },
     lastMove: {
       row: null,
@@ -75,7 +77,7 @@ var QuartoUI = (function(Quarto) {
 
       this.lastMove.piece = Quarto.givePiece(pieceIndex);
       Quarto.phase = 1;
-
+      this.toggleText();
       return this;
       
     },
@@ -94,16 +96,25 @@ var QuartoUI = (function(Quarto) {
       var thePiece = document
                       .querySelector(this.selectors.playbox)
                       .children.item(0);
+      //TODO better grid tokenizer. Not bad but could be better.
       var coords = theSlot.id.split('-');
       coords.shift(); //discard 'cell'
-      //TODO better grid tokenizer. Not bad but could be better.
       this.lastMove.row = coords.shift();
       this.lastMove.column = coords.shift();
       //move piece from playbox to grid
       theSlot.appendChild(thePiece);
       Quarto.setPieceToGrid(this.lastMove.row, this.lastMove.column, this.lastMove.piece); 
       Quarto.phase = 0;
+      this.toggleText();
       return this;
+    },
+    toggleText:function(){
+      var textNode = document.querySelector(this.selectors.text);      
+      textNode.classList.toggle('select');
+      textNode.classList.toggle('play');
+      
+      return this;
+
     },
     shoutQuarto: function() {
       console.log(this.lastMove)
