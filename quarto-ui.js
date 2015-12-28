@@ -51,15 +51,22 @@ var QuartoUI = (function(Quarto) {
     givePiece: function(e) {
       //Move piece from piecebox to playbox
       
-      // console.log(e);
+      console.log(e);
       if(this.gameOver) {
         return false;
       }
 
-      var thePiece = e.originalTarget;
-      // console.log(thePiece.className);
+      // if(e.originalTarget){
+      var thePiece = (e.originalTarget || e.srcElement);
+      // } else if (e.toElement) {
+      //       var thePiece = e.toElement;
+      // }
+      // else {
+      //   alert('wtf');
+      // }
+      console.log(thePiece.className);
       
-      if(! thePiece.className.contains(this.selectors.piece.substr(1)) ) {
+      if(! /js-piece/.test(thePiece.className))  {
         console.log('not a game piece');
         return false;
       }
@@ -90,14 +97,15 @@ var QuartoUI = (function(Quarto) {
        if(this.gameOver) {
         return false;
       }
-      
+
       if (Quarto.phase !== 1) {
         console.log('Give a piece to player first...');
         return false;
       }
 
-      var theSlot = e.originalTarget;
-      if(!theSlot.classList.contains(this.selectors.gridCell.substr(1)) )  {
+      var theSlot = (e.originalTarget || e.srcElement);
+
+      if( !/js-grid-cell/.test(theSlot.className) )  {
         console.log('Not a grid cell');
         return false;
       }
