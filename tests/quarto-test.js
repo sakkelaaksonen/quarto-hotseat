@@ -62,6 +62,7 @@ describe('Quarto Game Engine', function() {
       var lastPiece = Quarto.givePiece(15);
 
       expect(lastPiece.constructor).to.equal(Piece);
+      
       expect(Quarto.pieces).to.have.length(15);
 
       expect(Quarto.givePiece(1).constructor).equal(Piece);
@@ -77,24 +78,47 @@ describe('Quarto Game Engine', function() {
 
 
   describe('Quarto.setPiece & Quarto.getPiece', function() {
-    Quarto.start();
+    
     it('should set a piece to given grid cell and get that same piece from that same cell', function() {
+    	Quarto.start();
       //give a piece
       var thePiece = Quarto.givePiece(0);
-      expect(Quarto.setPieceToGrid.bind(Quarto, 0, 0, {
-        a: 1
-      })).to.throw(/this shit/);
+      // expect(Quarto.setPieceToGrid.bind(Quarto, 0, 0, {
+      //   a: 1
+      // })).to.throw(/this shit/);
       expect(Quarto.setPieceToGrid(0, 0, thePiece)).to.equal(thePiece);
       
     });
 
-    it('should throw an error when grid coordinates are out of bounds',function() {
-      //And when would that ever occur? Excessive bullshit this is...
-      expect(Quarto.getPieceInGrid.bind(Quarto, 5, 5)).to.throw(/coordinates/);
-    });
+    // it('should throw an error when grid coordinates are out of bounds',function() {
+    // 	Quarto.start();
+    //   //And when would that ever occur? Excessive bullshit this is...
+    //   expect(Quarto.getPieceInGrid.bind(Quarto, 5, 5)).to.throw(/coordinates/);
+    // });
 
     it('should not allow replacing a piece in already occupied slot',function() {
-      expect(Quarto.setPieceToGrid(0, 0, Quarto.givePiece(5))).to.be.false;
+
+    	Quarto.start();
+    	var piece = Quarto.givePiece(0);
+      expect(Quarto.setPieceToGrid(0, 0, piece)).to.equal(piece);
+
+      expect(
+      	Quarto.setPieceToGrid.bind(Quarto ,0, 0, Quarto.givePiece(0))
+      	).to.throw(/already populated/)
+
+			var piece = Quarto.givePiece(0);
+      expect(Quarto.setPieceToGrid(1, 0, piece)).to.equal(piece);
+			expect(
+      	Quarto.setPieceToGrid.bind(Quarto ,1, 0, Quarto.givePiece(0))
+    	).to.throw(/already populated/)      
+
+			var piece = Quarto.givePiece(0);
+      expect(Quarto.setPieceToGrid(1, 1, piece)).to.equal(piece);
+      expect(
+      	Quarto.setPieceToGrid.bind(Quarto ,1, 1, Quarto.givePiece(0))
+    	).to.throw(/already populated/)
+      
+
     })
   });
 
@@ -278,12 +302,9 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
 
   describe('Quarto.isQuarto', function() {
-
+    Quarto.start();
     expect(Quarto.isQuarto.bind(Quarto,null,null,null)).to.throw(Piece.NOT_A_PIECE);
     expect(Quarto.isQuarto(new Piece(0,0,0,0),0,0)).to.be.false;
-
-
-    
 
 
     it('should be a row quarto of light pieces', function() {

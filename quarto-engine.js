@@ -41,19 +41,26 @@ var Quarto = (function() {
   }
 
   function _setPiece(row, column, piece) {
+
+    if(row === undefined || column === undefined || piece === undefined)
+      throw new Error('Missing parameters. Must be called with row index, column index and piece');
     //why did I write this? It's just an ANTIPATTERN
     //TODO: Get rid of it man. I don't want to wrap everything to try/catch 
     //There is nothing the user can do to break this in any way.
-    if (piece.constructor !== Piece) {
-      throw new Error(Piece.NOT_A_PIECE)
-    }
+    // if (piece.constructor !== Piece) {
+    //   throw new Error(Piece.NOT_A_PIECE)
+    // }
 
     if (this.grid[row][column] !== undefined) {
+      
+      throw new Error('Slot is already populated');
+
       console.log('That slot is already populated. Try another one');
       return false;
     }
 
     return this.grid[row][column] = piece;
+    
   }
 
   //Evaluators
@@ -167,7 +174,8 @@ var Quarto = (function() {
   }
 
   function _isQuarto(lastPiece, row, column) {
-    console.log(this.grid);
+
+    // console.log(this.grid);
     if (!lastPiece || lastPiece.constructor !== Piece) {
       throw new Error(Piece.NOT_A_PIECE)
     }
