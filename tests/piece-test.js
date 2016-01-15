@@ -1,13 +1,33 @@
 var expect = require('chai').expect;
 var Piece = require('../piece.js');
 
+ 
+Array.prototype.unique = function() {
+    var a = [], l = this.length;
+    for(var i=0; i<l; i++) {
+      for(var j=i+1; j<l; j++)
+            if (this[i] === this[j]) j = ++i;
+      a.push(this[i]);
+    }
+    return a;
+
+};
 
 //TODO: Make pieces-test.js
 describe('Piece', function() {
 
   //One test to test them all
   it('should make all pieces with Piece.makeAllPieces', function() {
-    expect(Piece.makeAllPieces()).to.have.length(16);
+
+  	pieces = Piece.makeAllPieces();
+  	simpleProps = pieces.map(function(p){
+  		return p.getPropertyString();
+  	});
+
+		expect(simpleProps.length ).to.equal(simpleProps.unique().length);
+
+  	
+
   });
 
   it('should return the properties given in constructor with getProperties', function() {

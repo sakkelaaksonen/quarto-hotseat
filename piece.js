@@ -83,7 +83,7 @@ Piece.makeAllPieces = function() {
     new Piece(1, 0, 1, 0), //round short hollow light
 
     new Piece(0, 1, 1, 0), //square tall hollow light 
-    new Piece(1, 1, 0, 0), //round tall hollow light
+    new Piece(1, 1, 1, 0), //round tall hollow light
 
     //Dark
     new Piece(0, 0, 0, 1), //square short filled dark

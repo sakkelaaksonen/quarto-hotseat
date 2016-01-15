@@ -118,8 +118,15 @@ var QuartoUI = (function(Quarto) {
       this.lastMove.row = coords.shift();
       this.lastMove.column = coords.shift();
       //move piece from playbox to grid
+      try{
+        Quarto.setPieceToGrid(this.lastMove.row, this.lastMove.column, this.lastMove.piece); 
+      } catch(e) {
+        alert('Can you not see there is already a piece on that slot');
+        return this;
+      }
+
       theSlot.appendChild(thePiece);
-      Quarto.setPieceToGrid(this.lastMove.row, this.lastMove.column, this.lastMove.piece); 
+      
       Quarto.phase = 0;
       this.toggleText();
       return this;
