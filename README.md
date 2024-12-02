@@ -25,6 +25,7 @@ Also, unlike most implementations I have seen,in my game you really have to shou
 
 - 2.12.2024 
     - Migration from now/zeit to Github Pages
+    - https://sakkelaaksonen.github.io/quarto-hotseat/
     - npm audit fix
 
 
