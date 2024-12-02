@@ -9,10 +9,6 @@ h2 {display: inline-block; }
 
 div { box-sizing:border-box; }
 
-.grid-container {
-
-}
-
 .grid {
     height:40rem;
     width:40rem;

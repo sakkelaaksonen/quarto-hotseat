@@ -1,6 +1,6 @@
 {
   "name": "quarto",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HMTL Quarto game",
   "main": "index.html",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "Sakari Laaksonen",
   "license": "MIT",
   "dependencies": {
-    "chai": "^3.4.1",
-    "mocha": "^2.3.4"  
+    "chai": "3.4.1",
+    "mocha": "10.8.2"
   }
 }

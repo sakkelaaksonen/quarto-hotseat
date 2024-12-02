@@ -1,6 +1,3 @@
-//TODO: what is this verbose shit i wrote? 
-//All we need is function(a,b,c,d){return [a,b,c,d]}
-//Once this is done,it's time to start code golfing this excessiveness.
 function shuffleArray(array) {
     for (var i = array.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
