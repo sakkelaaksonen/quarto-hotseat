@@ -27,7 +27,7 @@ Also, unlike most implementations I have seen,in my game you really have to shou
     - Migration from now/zeit to Github Pages
     - https://sakkelaaksonen.github.io/quarto-hotseat/
     - npm audit fix
-
+    - Some quarto cases are not correctly recognized. Needs fixes.
 
 ## TODO: 
 - Add piece descriptions to titles
