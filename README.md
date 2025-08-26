@@ -1,3 +1,9 @@
+## STALE AND BROKEN ##
+
+
+needs bugfixes and a few days of sanity checks.
+
+
 # Quarto 
 
 ## My five cents to gaming community
@@ -18,7 +24,7 @@ Read [Quarto Rules](https://en.wikipedia.org/wiki/Quarto_%28board_game%29)
 
 
 Players should know who's turn it is. 
-Also, unlike most implementations I have seen,in my game you really have to shout (**click**) Quarto. Most games will automatically declare a winner once first quarto is present on the game board. However, THIS IS WRONG. So I left it out. Being able to miss a quarto and continuing is essential part of the game IMHO.
+Also, unlike most implementations I have seen,in my game you really have to shout (**click**) Quarto. Most games will automatically declare a winner once first quarto is present on the game board. However, this is not in the spirit of the game. So I left it out. Being able to miss a quarto and continuing is essential part of the game IMHO.
 
 
 ## DEV LOG
