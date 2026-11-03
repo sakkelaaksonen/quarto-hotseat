@@ -47,10 +47,19 @@ Requires Node 22+ for tooling:
     - Some quarto cases are not correctly recognized. Needs fixes.
 
 - 3.11.2026
-    - Native ES modules, node:test, ESLint, GitHub Actions CI
+    - Native ES modules, node:test, Biome, GitHub Actions CI
     - Fixed: diagonals checked from cells not on them, Quarto claimable after
       handing over the next piece, crash when shouting before the first move,
       occupied-cell clicks corrupting the last move
-    - Draw detection, winning line highlight, Quarto type shown on win,
-      piece descriptions as titles, better contrast for dark hollow pieces
+    - Draw detection, winning line highlight, Quarto type shown on win
+    - New layout for tablets and phones lying flat on a table: always
+      landscape (rotated in portrait), board left, controls and pieces right,
+      scales to the screen, touch friendly, pieces and cells are buttons
+    - 3D look in pure CSS on a flat tilted board (no preserve-3d, which broke
+      click hit-testing): square board cells, all pieces share one footprint
+      and differ by real height, recessed holes, rounded square pieces,
+      selected piece shown on its own board-style cell
+    - Piece markup lives in `<template>`s in index.html
+    - The piece pool is shuffled every game on purpose, so the board can't be
+      read from memorised positions
 
