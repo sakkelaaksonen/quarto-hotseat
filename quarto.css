@@ -19,6 +19,7 @@
     --piece-footprint: 64cqw;
     --piece-short: 30cqw;
     --piece-tall: 60cqw;
+    --hole-depth: 6cqw;
     --light-top: #f4f4f4;
     --light-side-a: #cfcfcf;
     --light-side-b: #8c8c8c;
@@ -247,14 +248,27 @@ button {
     background: var(--side-b);
 }
 
-/* Hollow: a hole in the top face */
+/* Hollow: a shallow hole in the top face. The background is the floor;
+   an inset shadow shifted by the hole depth (same lift direction as the
+   pieces) is the inner wall at the back. The front rim hides the rest. */
 .piece-hole {
+    --d: calc(var(--hole-depth) * tan(var(--tilt-x)));
+    --rim: 0 0 0 0 transparent;
+
     position: absolute;
     display: block;
     inset: 25%;
     border-radius: 50%;
-    background: #0a0a0a;
-    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.15);
+    background: color-mix(in srgb, var(--top), #000 60%);
+    box-shadow:
+        inset calc(var(--d) * sin(var(--tilt-z))) calc(var(--d) * cos(var(--tilt-z))) 0 0
+            color-mix(in srgb, var(--top), #000 35%),
+        inset var(--rim);
+}
+
+/* Keep the hole readable on dark pieces */
+.dark .piece-hole {
+    --rim: 0 0 0 1px rgb(255 255 255 / 0.25);
 }
 
 /* Outside the board, pieces get the board's tilt themselves so they look
