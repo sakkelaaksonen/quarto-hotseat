@@ -55,5 +55,29 @@
       </aside>
 
     </main>
+
+    <!--
+      Piece markup, cloned by quarto-ui.js. The UI adds the property classes
+      (round/square, tall/short, hollow/filled, dark/light) to .piece and
+      removes .piece-hole from filled pieces. Faces are drawn in order, so
+      .piece-top must stay last. See the Pieces section in quarto.css.
+    -->
+    <template id="js-piece-round">
+      <span class="piece">
+        <span class="piece-body"></span>
+        <span class="piece-top"><span class="piece-hole"></span></span>
+      </span>
+    </template>
+
+    <template id="js-piece-square">
+      <span class="piece">
+        <span class="piece-front"></span>
+        <span class="piece-right"></span>
+        <span class="piece-edge piece-edge-fl"></span>
+        <span class="piece-edge piece-edge-fr"></span>
+        <span class="piece-edge piece-edge-br"></span>
+        <span class="piece-top"><span class="piece-hole"></span></span>
+      </span>
+    </template>
   </body>
 </html>

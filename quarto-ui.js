@@ -38,29 +38,12 @@ const QuartoUI = {
     this.render();
   },
 
-  // A piece is drawn from flat faces (see quarto.css): the visible sides,
-  // then the top face, with a hole if hollow.
+  // Clones the piece markup from the round/square template in index.html.
   createPiece(piece) {
-    const part = (name) => {
-      const el = document.createElement('span');
-      el.className = name;
-      return el;
-    };
-    const pieceEl = part(`piece ${piece.getPropertyString()}`);
-    if (piece.isRound()) {
-      pieceEl.append(part('piece-body'));
-    } else {
-      pieceEl.append(
-        part('piece-front'),
-        part('piece-right'),
-        part('piece-edge piece-edge-fl'),
-        part('piece-edge piece-edge-fr'),
-        part('piece-edge piece-edge-br'),
-      );
-    }
-    const top = part('piece-top');
-    if (piece.isHollow()) top.append(part('piece-hole'));
-    pieceEl.append(top);
+    const template = document.querySelector(piece.isRound() ? '#js-piece-round' : '#js-piece-square');
+    const pieceEl = template.content.firstElementChild.cloneNode(true);
+    pieceEl.classList.add(...piece.getPropertyString().split(' '));
+    if (!piece.isHollow()) pieceEl.querySelector('.piece-hole').remove();
     return pieceEl;
   },
 
