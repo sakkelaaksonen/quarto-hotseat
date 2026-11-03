@@ -63,3 +63,6 @@ Requires Node 22+ for tooling:
     - The piece pool is shuffled every game on purpose, so the board can't be
       read from memorised positions
 
+## TODO
+- Cache busting for releases, now seeing stale versions on various devices
+- installable version, manifest etc?
