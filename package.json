@@ -1,15 +1,23 @@
 {
   "name": "quarto",
-  "version": "1.0.1",
-  "description": "HMTL Quarto game",
+  "version": "1.1.0",
+  "description": "HTML Quarto game",
+  "type": "module",
   "main": "index.html",
+  "private": true,
   "scripts": {
-    "test": "mocha tests"
+    "test": "node --test \"tests/**/*-test.js\"",
+    "lint": "eslint .",
+    "serve": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "author": "Sakari Laaksonen",
   "license": "MIT",
-  "dependencies": {
-    "chai": "3.4.1",
-    "mocha": "10.8.2"
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0"
   }
 }

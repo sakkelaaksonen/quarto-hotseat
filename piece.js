@@ -8,7 +8,7 @@ function shuffleArray(array) {
     return array;
 }
 
-var Piece = function(shape, height, hollow, color) {
+const Piece = function(shape, height, hollow, color) {
     
     this.shape = shape;
     this.color = color;
@@ -33,35 +33,35 @@ Piece.prototype.getProperties = function() {
   return [this.shape, this.height, this.hollow, this.color];
 }
 
-Piece.prototype.isRound = function()  {
+Piece.prototype.isRound = function()  {
   return this.shape === 1;
 }
 
-Piece.prototype.isSquare = function()  {
+Piece.prototype.isSquare = function()  {
   return this.shape === 0;
 }
 
-Piece.prototype.isTall = function()  {
+Piece.prototype.isTall = function()  {
   return this.height === 1;
 }
 
-Piece.prototype.isShort = function()  {
+Piece.prototype.isShort = function()  {
   return this.height === 0;
 }
 
-Piece.prototype.isHollow = function()  {
+Piece.prototype.isHollow = function()  {
   return this.hollow === 1;
 }
 
-Piece.prototype.isFilled = function()  {
+Piece.prototype.isFilled = function()  {
   return this.hollow === 0;
 }
 
-Piece.prototype.isDark = function()  {
+Piece.prototype.isDark = function()  {
   return this.color === 1;
 }
 
-Piece.prototype.isLight = function()  {
+Piece.prototype.isLight = function()  {
   return this.color === 0;
 }
 
@@ -98,4 +98,4 @@ Piece.makeAllPieces = function() {
 }
 
 Piece.NOT_A_PIECE = 'what is this shit you are giving me man?!';
-if (typeof module !== 'undefined') module.exports = Piece;
+export default Piece;

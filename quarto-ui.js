@@ -1,4 +1,6 @@
-var QuartoUI = (function(Quarto) {
+import Quarto from './quarto-engine.js';
+
+const QuartoUI = (function(Quarto) {
 
 
   //events

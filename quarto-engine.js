@@ -1,20 +1,7 @@
-//node or browser? everything goes as long as we have game pieces
-
-if (!Piece && typeof require !== 'undefined') {
-  var Piece = require('./piece.js');
-}
-
-if (!Piece) {
-  var msg = 'We need some game pieces in order to play';
-  throw new Error(msg);
-  if (alert) {
-    alert(msg);
-  }
-}
-
+import Piece from './piece.js';
 
 //The game engine
-var Quarto = (function() {
+const Quarto = (function() {
 
   //GRID STUFF
 
@@ -70,7 +57,7 @@ var Quarto = (function() {
   //Also, expose these methods for testing
   function _isDarkSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isDark()) {
         counter++;
       }
@@ -82,7 +69,7 @@ var Quarto = (function() {
 
   function _isLightSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isLight()) {
         counter++;
       }
@@ -93,7 +80,7 @@ var Quarto = (function() {
 
   function _isRoundSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isRound()) {
         counter++;
       }
@@ -104,7 +91,7 @@ var Quarto = (function() {
 
   function _isSquareSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isSquare()) {
         counter++;
       }
@@ -117,7 +104,7 @@ var Quarto = (function() {
   function _isTallSet(row) {
     var counter = 0;
 
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isTall()) {
         counter++;
       }
@@ -128,7 +115,7 @@ var Quarto = (function() {
 
   function _isShortSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isShort()) {
         counter++;
       }
@@ -139,7 +126,7 @@ var Quarto = (function() {
 
   function _isFilledSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isFilled()) {
         counter++;
       }
@@ -150,7 +137,7 @@ var Quarto = (function() {
 
   function _isHollowSet(row) {
     var counter = 0;
-    for (i = 0; i < row.length; i++) {
+    for (let i = 0; i < row.length; i++) {
       if (row[i] !== undefined && row[i].isHollow()) {
         counter++;
       }
@@ -230,7 +217,7 @@ var Quarto = (function() {
     return false;
   }
 
-  _startGame = function() {
+  function _startGame() {
     this.pieces = Piece.makeAllPieces();
     this.phase = 0;
     this.grid = [
@@ -266,4 +253,4 @@ var Quarto = (function() {
 
 })();
 
-if (typeof module !== 'undefined') module.exports = Quarto;
+export default Quarto;

@@ -27,6 +27,19 @@ Players should know who's turn it is.
 Also, unlike most implementations I have seen,in my game you really have to shout (**click**) Quarto. Most games will automatically declare a winner once first quarto is present on the game board. However, this is not in the spirit of the game. So I left it out. Being able to miss a quarto and continuing is essential part of the game IMHO.
 
 
+## Development
+
+No build step. The game uses native ES modules, so it must be served over HTTP
+(opening `index.html` via `file://` will not work):
+
+    npm run serve        # python3 -m http.server 8000 → http://localhost:8000
+
+Requires Node 22+ for tooling:
+
+    npm install
+    npm test             # node:test
+    npm run lint         # eslint
+
 ## DEV LOG
 
 - 2.12.2024 
