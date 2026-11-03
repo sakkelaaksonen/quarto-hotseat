@@ -1,10 +1,4 @@
-## STALE AND BROKEN ##
-
-
-needs bugfixes and a few days of sanity checks.
-
-
-# Quarto 
+# Quarto
 
 ## My five cents to gaming community
 
@@ -18,7 +12,11 @@ Read [Quarto Rules](https://en.wikipedia.org/wiki/Quarto_%28board_game%29)
 
 **Click** on a board cell to place selected piece on the board.
 
-**Click** Quarto button when you want to declare Quarto.
+**Click** Quarto button when you want to declare Quarto. A Quarto can only be
+claimed right after placing the piece that completes it, before handing over
+the next piece. Once the next piece is given, that Quarto is lost.
+
+When the board is full, shout Quarto or click **Draw**.
 
 **NOTE**
 
@@ -38,7 +36,7 @@ Requires Node 22+ for tooling:
 
     npm install
     npm test             # node:test
-    npm run lint         # eslint
+    npm run lint         # biome
 
 ## DEV LOG
 
@@ -48,9 +46,11 @@ Requires Node 22+ for tooling:
     - npm audit fix
     - Some quarto cases are not correctly recognized. Needs fixes.
 
-## TODO: 
-- Add piece descriptions to titles
-- When Player shouts (clicks) Quarto, tell what kind of quarto it was
-- Hilight Quarto row in grid
-
+- 3.11.2026
+    - Native ES modules, node:test, ESLint, GitHub Actions CI
+    - Fixed: diagonals checked from cells not on them, Quarto claimable after
+      handing over the next piece, crash when shouting before the first move,
+      occupied-cell clicks corrupting the last move
+    - Draw detection, winning line highlight, Quarto type shown on win,
+      piece descriptions as titles, better contrast for dark hollow pieces
 

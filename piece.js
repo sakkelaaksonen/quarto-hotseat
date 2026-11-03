@@ -1,9 +1,7 @@
 function shuffleArray(array) {
-    for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
@@ -23,14 +21,23 @@ Piece.prototype.color = null;
 
 Piece.prototype.getPropertyString = function(){
   return [
-  !!this.shape ? 'round' : 'square',
-  !!this.height ? 'tall' : 'short',
-  !!this.hollow ? 'hollow' : 'filled',
-  !!this.color ? 'dark' : 'light'
+  this.shape ? 'round' : 'square',
+  this.height ? 'tall' : 'short',
+  this.hollow ? 'hollow' : 'filled',
+  this.color ? 'dark' : 'light'
   ].join(' ');
 }
 Piece.prototype.getProperties = function() {
   return [this.shape, this.height, this.hollow, this.color];
+}
+
+// Unique id 0-15: shape is bit 0, height bit 1, hollow bit 2, color bit 3
+Piece.prototype.getId = function() {
+  return this.shape | (this.height << 1) | (this.hollow << 2) | (this.color << 3);
+}
+
+Piece.fromId = function(id) {
+  return new Piece(id & 1, (id >> 1) & 1, (id >> 2) & 1, (id >> 3) & 1);
 }
 
 Piece.prototype.isRound = function()  {

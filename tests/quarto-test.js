@@ -3,14 +3,20 @@ import assert from 'node:assert/strict';
 import Piece from '../piece.js';
 import Quarto from '../quarto-engine.js';
 
-function playAndTest(move1, move2, move3, move4) {
+// Plays four moves and asserts the last one completes a quarto of the
+// expected kind ('diagonal' matches either diagonal direction).
+function playAndTest(expected, ...moves) {
   Quarto.start();
-  Quarto.setPieceToGrid(move1.row, move1.column, move1.piece);
-  Quarto.setPieceToGrid(move2.row, move2.column, move2.piece);
-  Quarto.setPieceToGrid(move3.row, move3.column, move3.piece);
-  const lastPiece = move4.piece;
-  Quarto.setPieceToGrid(move4.row, move4.column, lastPiece);
-  assert.equal(Quarto.isQuarto(lastPiece, move4.row, move4.column), true);
+  for (const move of moves) {
+    Quarto.setPieceToGrid(move.row, move.column, move.piece);
+  }
+  const last = moves[moves.length - 1];
+  const lines = Quarto.getQuartoLines(last.row, last.column);
+  const match = lines.some((l) =>
+    (l.line === expected.line || (expected.line === 'diagonal' && l.line.endsWith('diagonal'))) &&
+    l.properties.includes(expected.property));
+  assert.ok(match, `expected a ${expected.property} ${expected.line} quarto, got ${JSON.stringify(lines.map(({ line, properties }) => ({ line, properties })))}`);
+  assert.equal(Quarto.isQuarto(last.row, last.column), true);
 }
 
 describe('Quarto Game Engine', function() {
@@ -63,6 +69,16 @@ describe('Quarto Game Engine', function() {
       Quarto.start();
       const thePiece = Quarto.givePiece(0);
       assert.equal(Quarto.setPieceToGrid(0, 0, thePiece), thePiece);
+      assert.equal(Quarto.getPieceInGrid(0, 0), thePiece);
+      assert.equal(Quarto.getPieceInGrid(3, 3), null);
+    });
+
+    it('should reject out-of-bounds coordinates and non-pieces', function() {
+      Quarto.start();
+      assert.throws(() => Quarto.getPieceInGrid(4, 0), /outside grid/);
+      assert.throws(() => Quarto.getPieceInGrid(0, -1), /outside grid/);
+      assert.throws(() => Quarto.setPieceToGrid(0, 4, new Piece(0, 0, 0, 0)), /outside grid/);
+      assert.throws(() => Quarto.setPieceToGrid(0, 0, { shape: 0 }), { message: Piece.NOT_A_PIECE });
     });
 
     it('should not allow replacing a piece in already occupied slot', function() {
@@ -186,7 +202,7 @@ describe('Quarto.evaluators.isShortSet',function(){
 
 
 describe('Quarto.evaluators.isFilledSet',function(){
-    it('should be a dark set',function(){
+    it('should be a filled set',function(){
         assert.equal(Quarto.evaluators.isFilledSet([
           new Piece(0,0,0,1),
           new Piece(1,0,0,1),
@@ -204,7 +220,7 @@ describe('Quarto.evaluators.isFilledSet',function(){
   });
 
 describe('Quarto.evaluators.isHollowSet',function(){
-    it('should be a dark set',function(){
+    it('should be a hollow set',function(){
         assert.equal(Quarto.evaluators.isHollowSet([
           new Piece(0,0,1,1),
           new Piece(1,0,1,1),
@@ -223,16 +239,18 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
 
   describe('Quarto.isQuarto', function() {
-    it('should reject a missing piece and find no quarto on an empty grid', function() {
+    it('should reject bad coordinates and find no quarto on an empty grid', function() {
       Quarto.start();
-      assert.throws(() => Quarto.isQuarto(null, null, null), { message: Piece.NOT_A_PIECE });
-      assert.equal(Quarto.isQuarto(new Piece(0, 0, 0, 0), 0, 0), false);
+      assert.throws(() => Quarto.isQuarto(null, null), /outside grid/);
+      assert.throws(() => Quarto.isQuarto(-1, 0), /outside grid/);
+      assert.throws(() => Quarto.isQuarto(0, 4), /outside grid/);
+      assert.equal(Quarto.isQuarto(0, 0), false);
     });
 
 
     it('should be a row quarto of light pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'row', property: 'light' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,1,0,0)
@@ -254,7 +272,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a column quarto of light pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'column', property: 'light' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,1,1,0)
@@ -276,7 +294,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a diagonal quarto of light pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'light' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,1,0,0)
@@ -298,7 +316,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a row quarto of dark pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'row', property: 'dark' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,0,0,1)
@@ -320,7 +338,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a column quarto of dark pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'column', property: 'dark' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,1,0,1)
@@ -342,7 +360,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a diagonal quarto of dark pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'dark' }, {
         row: 0,
         column: 3,
         piece: new Piece(0,0,0,1)
@@ -365,7 +383,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a row quarto of round pieces', function() {
       
-      playAndTest({
+      playAndTest({ line: 'row', property: 'round' }, {
         row: 3,
         column: 0,
         piece: new Piece(1,0,0,1)
@@ -387,7 +405,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a column quarto of round pieces',function() {
       
-      playAndTest({
+      playAndTest({ line: 'column', property: 'round' }, {
         row: 0,
         column: 3,
         piece: new Piece(1,0,0,0)
@@ -409,7 +427,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     
     it('should be a diagonal quarto of round pieces',function() {
       
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'round' }, {
         row: 3,
         column: 0,
         piece: new Piece(1,0,0,1)
@@ -431,7 +449,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a row quarto of square pieces',function() {
       
-      playAndTest({
+      playAndTest({ line: 'row', property: 'square' }, {
         row: 2,
         column: 0,
         piece: new Piece(0,1,1,0)
@@ -452,7 +470,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
  
     it('should be a column quarto of square pieces',function(){
-      playAndTest({
+      playAndTest({ line: 'column', property: 'square' }, {
         row: 2,
         column: 3,
         piece: new Piece(0,1,1,0)
@@ -471,7 +489,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
       });
     });
     it('should be a diagonal quarto of square pieces',function() {
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'square' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,1,0,0)
@@ -492,7 +510,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
 
     it('should be a row quarto of tall pieces',function() {
-      playAndTest({
+      playAndTest({ line: 'row', property: 'tall' }, {
         row: 2,
         column: 3,
         piece: new Piece(0,1,1,0)
@@ -513,7 +531,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
 
     it('should be a column quarto of tall pieces',function() {
-      playAndTest({
+      playAndTest({ line: 'column', property: 'tall' }, {
         row: 2,
         column: 3,
         piece: new Piece(0,1,1,0)
@@ -534,7 +552,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
 
     it('should be a diagonal quarto of tall pieces',function(){
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'tall' }, {
         row: 3,
         column: 0,
         piece: new Piece(1,1,1,0)
@@ -556,7 +574,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a row quarto of short pieces',function() {
 
-      playAndTest({
+      playAndTest({ line: 'row', property: 'short' }, {
         row: 0,
         column: 3,
         piece: new Piece(0,0,1,0)
@@ -578,7 +596,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a column quarto of short pieces',function() {
 
-      playAndTest({
+      playAndTest({ line: 'column', property: 'short' }, {
         row: 2,
         column: 0,
         piece: new Piece(0,0,0,0)
@@ -600,7 +618,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a diagonal quarto of short pieces',function() {
 
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'short' }, {
         row: 0,
         column: 0,
         piece: new Piece(0,0,1,0)
@@ -621,7 +639,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
 
     it('should be a row quarto of filled pieces',function() {
-      playAndTest({
+      playAndTest({ line: 'row', property: 'filled' }, {
         row: 2,
         column: 3,
         piece: new Piece(0,1,0,0)
@@ -642,7 +660,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
 
     it('should be a column quarto of filled pieces', function(){
-      playAndTest({
+      playAndTest({ line: 'column', property: 'filled' }, {
         row: 2,
         column: 0,
         piece: new Piece(0,0,0,0)
@@ -663,7 +681,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
     });
     
     it('should be a diagonal quarto of filled pieces',function() {
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'filled' }, {
         row: 3,
         column: 0,
         piece: new Piece(0,1,0,0)
@@ -685,7 +703,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a row quarto of hollow pieces',function() {
 
-            playAndTest({
+            playAndTest({ line: 'row', property: 'hollow' }, {
         row: 3,
         column: 0,
         piece: new Piece(0,1,1,0)
@@ -707,7 +725,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a column quarto of hollow pieces',function(){
 
-      playAndTest({
+      playAndTest({ line: 'column', property: 'hollow' }, {
         row: 2,
         column: 3,
         piece: new Piece(0,1,1,0)
@@ -729,7 +747,7 @@ describe('Quarto.evaluators.isHollowSet',function(){
 
     it('should be a diagonal quarto of hollow pieces', function(){
 
-      playAndTest({
+      playAndTest({ line: 'diagonal', property: 'hollow' }, {
         row: 3,
         column: 0,
         piece: new Piece(0,0,1,0)
