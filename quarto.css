@@ -120,7 +120,7 @@ button {
     place-items: center;
     padding: 0;
     border: max(2px, 0.6cqmin) solid var(--cell-border);
-    border-radius: 50%;
+    border-radius: 6%;
     background: var(--cell);
     cursor: pointer;
 }
