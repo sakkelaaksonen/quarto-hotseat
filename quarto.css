@@ -1,165 +1,345 @@
-body {
-    background: #000;
-    color: white;
-    font-family: sans-serif;
+/*
+ * Quarto Hot Seat
+ * Landscape tablet/phone lying flat on a table. Board on the left,
+ * everything else in a panel on the right. In portrait the whole layout
+ * is rotated so it is always landscape.
+ */
+
+:root {
+    color-scheme: dark;
+
+    --bg: #000;
+    --fg: #fff;
+    --muted: #aaa;
+    --accent: #f7a8f0;
+    --cell: rgb(255 255 255 / 0.08);
+    --cell-border: #888;
+    --piece-light: #eee;
+    --piece-dark: #4a4a4a;
+
+    /* Board tilt. Width is the limiting factor; rotate-z widens the board most */
+    --tilt-x: 50deg;
+    --tilt-z: 20deg;
+    /* Screen footprint of a 1x1 board at the above tilt (keep in sync) */
+    --footprint-w: 1.28;
+    --footprint-h: 0.82;
+
+    --gap: clamp(0.5rem, 2vmin, 1.25rem);
+    --radius: 0.5rem;
+
+    /* vmin is the landscape height in both orientations */
+    font-size: clamp(14px, 3.4vmin, 26px);
 }
 
-h2 {
-    display: inline-block;
-}
-
-.root {
-    min-width: 920px;
-}
-
-div {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, sans-serif;
+    /* Table-top play: no double-tap zoom, text selection or tap flashes */
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}
+
+/* ---------- Page layout ---------- */
+
+.root {
+    position: fixed;
+    inset: 0;
+    width: 100dvw;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 30%);
+    padding: max(var(--gap), env(safe-area-inset-top)) max(var(--gap), env(safe-area-inset-right))
+        max(var(--gap), env(safe-area-inset-bottom)) max(var(--gap), env(safe-area-inset-left));
+    gap: var(--gap);
+}
+
+/* Force landscape: rotate the whole layout when the device is portrait */
+@media (orientation: portrait) {
+    .root {
+        inset: auto;
+        top: 0;
+        left: 0;
+        width: 100dvh;
+        height: 100dvw;
+        transform-origin: top left;
+        transform: rotate(90deg) translateY(-100%);
+    }
+}
+
+/* ---------- Board ---------- */
+
+.board-area {
+    position: relative;
+    container-type: size;
+}
+
 .grid {
-    height: 40rem;
-    width: 40rem;
-    float: left;
-    perspective: 2000px;
-    transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(120px) translateZ(80px)
-        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) translateX(120px) translateZ(80px);*/
+    /* Largest board whose tilted footprint fits the board area */
+    --side: min(100cqw / var(--footprint-w), 100cqh / var(--footprint-h));
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--side);
+    height: var(--side);
+    margin: calc(var(--side) / -2) 0 0 calc(var(--side) / -2);
+    display: grid;
+    grid-template: repeat(4, 1fr) / repeat(4, 1fr);
+    gap: 3%;
+    padding: 2%;
+    /* One flat transform for the whole board: cells and pieces are drawn
+       flat, then tilted together. Do not add transform-style: preserve-3d,
+       it makes cells and board coplanar in 3D and breaks click hit-testing. */
+    transform: rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
 }
 
 .grid-cell {
-    height: 24%;
-    width: 24%;
-    margin: 0 0 1px 1px;
-    float: left;
     position: relative;
-    border: 0.3rem solid #aaa;
-    border-radius: 80px;
-    background-color: rgba(255, 255, 255, 0.1);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: max(2px, 0.6cqmin) solid var(--cell-border);
+    border-radius: 50%;
+    background: var(--cell);
+    cursor: pointer;
 }
 
-.grid-cell:hover {
-    background: rgba(255, 120, 220, 0.2);
+/* While placing, free cells glow so it is obvious where to tap */
+[data-phase="place"] .grid-cell:empty {
+    border-color: var(--accent);
 }
 
-
-.playbox {
-    border: 2px solid #ccc;
-    padding: 2rem;
-    width: 8rem;
-    height: 8rem;
-    position: absolute;
-    left: 42rem;
-    margin-top: 3rem;
-    perspective: 2000px;
-    transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(-54px) translateZ(10px)
-        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
+.grid-cell.winning {
+    border-color: var(--accent);
+    background: rgb(247 168 240 / 0.35);
 }
 
-.pieces {
-    min-width: 920px;
-    /*width: 100%;*/
-    /*margin:0 0 0 20%;*/
-    padding: 0 0 0.5rem 0;
-    height: 6rem;
-    /*overflow-x: scroll;*/
-
-    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
-}
+/* ---------- Pieces ---------- */
 
 .piece {
     position: relative;
-    display: inline-block;
-    margin: 0.3rem;
-    border: 3px solid transparent;
-    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
-}
-
-.dark.piece:hover {
-    border-color: #ddd;
-}
-
-.light.piece:hover {
-    border-color: #faf;
-}
-
-
-.dark {
-    background: #444;
-}
-
-.light {
-    background: #eee;
-}
-
-.square {
-    border-radius: 3px;
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 8%;
 }
 
 .round {
-    border-radius: 50px;
-}
-
-.hollow:after {
-    content: ' ';
-    width: 50%;
-    height: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    left: 25%;
-    top: 25%;
-    border-radius: 5rem;
-    position: absolute;
+    border-radius: 50%;
 }
 
 .short {
-    width: 3.3rem;
-    height: 3.3rem;
+    width: 58%;
 }
 
 .tall {
-    width: 5rem;
-    height: 5rem;
+    width: 86%;
 }
 
-.button-container .button {
-    text-decoration: none;
-    padding: 1rem 3rem;
-    text-align: center;
-    border: 1px solid white;
-    background-color: white;
-    color: black;
-    font-size: 1rem;
-    float: right;
-    margin: 0 0.5rem;
+.light {
+    background: var(--piece-light);
 }
 
+.dark {
+    background: var(--piece-dark);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+}
 
-.grid-cell .piece,
-.playbox .piece {
-    margin: auto;
+.hollow::after {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-}
-
-.button-container .button:disabled {
-    opacity: 0.4;
-    cursor: default;
-}
-
-.message {
-    min-height: 1.2em;
-    margin: 0.5rem 0;
-    color: #faf;
+    inset: 25%;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.5);
 }
 
 /* The hole must read clearly on dark pieces too */
-.dark.hollow:after {
+.dark.hollow::after {
     background: #000;
     box-shadow: 0 0 0 2px #bbb;
 }
 
-.grid-cell.winning {
-    border-color: #faf;
-    background-color: rgba(255, 120, 220, 0.35);
+/* ---------- Side panel ---------- */
+
+.panel {
+    min-height: 0;
+    display: grid;
+    grid-template:
+        "status  status" auto
+        "next    actions" auto
+        "pool    pool" minmax(0, 1fr)
+        / auto 1fr;
+    gap: var(--gap);
+}
+
+.status {
+    grid-area: status;
+}
+
+.title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.instructions {
+    margin: 0.2em 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.message {
+    min-height: 1.3em;
+    margin: 0.2em 0 0;
+    font-size: 0.9rem;
+    color: var(--accent);
+}
+
+.next {
+    grid-area: next;
+}
+
+.playbox {
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    aspect-ratio: 1;
+    border: 2px dashed var(--muted);
+    border-radius: var(--radius);
+}
+
+[data-phase="place"] .playbox {
+    border-style: solid;
+    border-color: var(--accent);
+}
+
+.actions {
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--gap) / 2);
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--fg);
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button[hidden] {
+    display: none;
+}
+
+.button-quarto {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #000;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.pool-area {
+    grid-area: pool;
+    min-height: 0;
+    container-type: size;
+}
+
+.pieces {
+    /* 4 x 4 slots, as large as the space allows */
+    --slot: min(25cqw, 25cqh);
+    display: grid;
+    grid-template-columns: repeat(4, var(--slot));
+    grid-auto-rows: var(--slot);
+    justify-content: center;
+    height: 100%;
+    align-content: center;
+}
+
+.pool-slot {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    background: none;
+    cursor: pointer;
+}
+
+/* Empty slot keeps the 4 x 4 pool readable after its piece is taken */
+.pool-slot:disabled {
+    border: 1px dashed rgb(255 255 255 / 0.15);
+    cursor: default;
+}
+
+.playbox .piece,
+.pool-slot .piece {
+    width: 64%;
+}
+
+.playbox .piece.tall,
+.pool-slot .piece.tall {
+    width: 90%;
+}
+
+/* ---------- Interaction feedback ---------- */
+
+@media (hover: hover) {
+    .grid-cell:hover {
+        background: rgb(247 168 240 / 0.2);
+    }
+
+    .pool-slot:not(:disabled):hover {
+        border-color: var(--muted);
+    }
+
+    .button:not(:disabled):hover {
+        filter: brightness(1.2);
+    }
+}
+
+.grid-cell:active,
+.pool-slot:not(:disabled):active {
+    background: rgb(247 168 240 / 0.25);
+}
+
+:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
 }
