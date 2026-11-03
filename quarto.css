@@ -313,10 +313,32 @@ button {
 /* Outside the board, pieces get the board's tilt themselves so they look
    the same everywhere. Scaled down a little and moved down by half the
    lift so tall pieces stay inside their slot. */
-.pool-slot .piece,
-.playbox .piece {
+.pool-slot .piece {
     transform: translateY(calc(var(--h) * sin(var(--tilt-x)) * 0.85 / 2)) scale(0.85)
         rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
+}
+
+/* The selected piece stands on a tilted square drawn like a board cell.
+   Square and piece share one transform, so the piece sits on it exactly as
+   on the board. Smaller scale than the pool so the whole square fits; the
+   shift is fixed (room for a tall piece) so the square never moves. */
+.playbox {
+    --playbox-tilt: translateY(calc(var(--piece-tall) * sin(var(--tilt-x)) * 0.75 / 2)) scale(0.75)
+        rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
+}
+
+.playbox::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--cell-border);
+    border-radius: 6%;
+    background: var(--cell);
+    transform: var(--playbox-tilt);
+}
+
+.playbox .piece {
+    transform: var(--playbox-tilt);
 }
 
 /* ---------- Side panel ---------- */
@@ -378,13 +400,6 @@ button {
     place-items: center;
     height: calc(var(--buttons) * var(--button-h) + (var(--buttons) - 1) * var(--actions-gap));
     aspect-ratio: 1;
-    border: 2px dashed var(--muted);
-    border-radius: var(--radius);
-}
-
-[data-phase="place"] .playbox {
-    border-style: solid;
-    border-color: var(--accent);
 }
 
 .actions {
