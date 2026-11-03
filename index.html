@@ -2,47 +2,82 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
     <title>Quarto Hot Seat</title>
     <script type="module" src="quarto-ui.js"></script>
     <link rel="stylesheet" href="quarto.css">
   </head>
   <body>
-    <div class="root">
+    <main class="root">
 
-      <div class="button-container">
-        <h2>Quarto Hot Seat: </h2>
-        <span id="js-instructions" class="instructions"></span>
-        <a id="js-start" class="button" href="?">Restart</a>
-        <button type="button" class="button" id="js-quarto">Quarto</button>
-        <button type="button" class="button" id="js-draw" hidden>Draw</button>
-        <p id="js-message" class="message" aria-live="polite"></p>
-      </div>
-      <div class="pieces" id="js-pieces"></div>
-      <div id="js-grid" class="grid">
+      <section class="board-area" aria-label="Board">
+        <div id="js-grid" class="grid">
+          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="0" aria-label="Row 1, column 1"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="1" aria-label="Row 1, column 2"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="2" aria-label="Row 1, column 3"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="3" aria-label="Row 1, column 4"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="0" aria-label="Row 2, column 1"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="1" aria-label="Row 2, column 2"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="2" aria-label="Row 2, column 3"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="3" aria-label="Row 2, column 4"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="0" aria-label="Row 3, column 1"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="1" aria-label="Row 3, column 2"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="2" aria-label="Row 3, column 3"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="3" aria-label="Row 3, column 4"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="0" aria-label="Row 4, column 1"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="1" aria-label="Row 4, column 2"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="2" aria-label="Row 4, column 3"></button>
+          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="3" aria-label="Row 4, column 4"></button>
+        </div>
+      </section>
 
-        <div class="grid-cell js-grid-cell" data-row="0" data-column="0"></div>
-        <div class="grid-cell js-grid-cell" data-row="0" data-column="1"></div>
-        <div class="grid-cell js-grid-cell" data-row="0" data-column="2"></div>
-        <div class="grid-cell js-grid-cell" data-row="0" data-column="3"></div>
+      <aside class="panel">
+        <header class="status">
+          <h1 class="title">Quarto</h1>
+          <p id="js-instructions" class="instructions"></p>
+          <p id="js-message" class="message" aria-live="polite"></p>
+        </header>
 
-        <div class="grid-cell js-grid-cell" data-row="1" data-column="0"></div>
-        <div class="grid-cell js-grid-cell" data-row="1" data-column="1"></div>
-        <div class="grid-cell js-grid-cell" data-row="1" data-column="2"></div>
-        <div class="grid-cell js-grid-cell" data-row="1" data-column="3"></div>
+        <div class="next">
+          <section class="playbox" id="js-playbox" aria-label="Piece to play"></section>
+        </div>
 
-        <div class="grid-cell js-grid-cell" data-row="2" data-column="0"></div>
-        <div class="grid-cell js-grid-cell" data-row="2" data-column="1"></div>
-        <div class="grid-cell js-grid-cell" data-row="2" data-column="2"></div>
-        <div class="grid-cell js-grid-cell" data-row="2" data-column="3"></div>
+        <div class="actions">
+          <button type="button" class="button button-quarto" id="js-quarto">Quarto!</button>
+          <button type="button" class="button" id="js-draw" hidden>Draw</button>
+          <a id="js-start" class="button" href="?">Restart</a>
+        </div>
 
-        <div class="grid-cell js-grid-cell" data-row="3" data-column="0"></div>
-        <div class="grid-cell js-grid-cell" data-row="3" data-column="1"></div>
-        <div class="grid-cell js-grid-cell" data-row="3" data-column="2"></div>
-        <div class="grid-cell js-grid-cell" data-row="3" data-column="3"></div>
+        <div class="pool-area">
+          <section class="pieces" id="js-pieces" aria-label="Available pieces"></section>
+        </div>
+      </aside>
 
-      </div>
-      <div class="playbox" id="js-playbox"></div>
+    </main>
 
-    </div>
+    <!--
+      Piece markup, cloned by quarto-ui.js. The UI adds the property classes
+      (round/square, tall/short, hollow/filled, dark/light) to .piece and
+      removes .piece-hole from filled pieces. Faces are drawn in order, so
+      .piece-top must stay last. See the Pieces section in quarto.css.
+    -->
+    <template id="js-piece-round">
+      <span class="piece">
+        <span class="piece-body"></span>
+        <span class="piece-top"><span class="piece-hole"></span></span>
+      </span>
+    </template>
+
+    <template id="js-piece-square">
+      <span class="piece">
+        <span class="piece-front"></span>
+        <span class="piece-right"></span>
+        <span class="piece-edge piece-edge-fl"></span>
+        <span class="piece-edge piece-edge-fr"></span>
+        <span class="piece-edge piece-edge-br"></span>
+        <span class="piece-top"><span class="piece-hole"></span></span>
+      </span>
+    </template>
   </body>
 </html>

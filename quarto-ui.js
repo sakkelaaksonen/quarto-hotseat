@@ -18,12 +18,16 @@ const QuartoUI = {
       message: $('#js-message'),
     };
 
+    // Each pool slot is a button wrapping the piece. The slot stays in
+    // place (disabled) when its piece is taken, so the pool never reflows.
     for (const piece of Quarto.pieces) {
-      const pieceEl = document.createElement('div');
-      pieceEl.className = `piece js-piece ${piece.getPropertyString()}`;
-      pieceEl.title = piece.getPropertyString();
-      pieceEl.dataset.pieceId = piece.getId();
-      this.els.pieces.appendChild(pieceEl);
+      const slot = document.createElement('button');
+      slot.type = 'button';
+      slot.className = 'pool-slot js-piece';
+      slot.dataset.pieceId = piece.getId();
+      slot.setAttribute('aria-label', piece.getPropertyString());
+      slot.appendChild(this.createPiece(piece));
+      this.els.pieces.appendChild(slot);
     }
 
     this.els.pieces.addEventListener('click', (e) => this.givePiece(e));
@@ -32,6 +36,15 @@ const QuartoUI = {
     this.els.draw.addEventListener('click', () => this.declareDraw());
 
     this.render();
+  },
+
+  // Clones the piece markup from the round/square template in index.html.
+  createPiece(piece) {
+    const template = document.querySelector(piece.isRound() ? '#js-piece-round' : '#js-piece-square');
+    const pieceEl = template.content.firstElementChild.cloneNode(true);
+    pieceEl.classList.add(...piece.getPropertyString().split(' '));
+    if (!piece.isHollow()) pieceEl.querySelector('.piece-hole').remove();
+    return pieceEl;
   },
 
   // Runs an engine action; rule violations are shown to the player.
@@ -46,11 +59,12 @@ const QuartoUI = {
   },
 
   givePiece(e) {
-    const pieceEl = e.target.closest('.js-piece');
-    if (!pieceEl) return;
+    const slot = e.target.closest('.js-piece');
+    if (!slot) return;
     this.attempt(() => {
-      Quarto.selectPiece(Number(pieceEl.dataset.pieceId));
-      this.els.playbox.appendChild(pieceEl);
+      Quarto.selectPiece(Number(slot.dataset.pieceId));
+      this.els.playbox.appendChild(slot.firstElementChild);
+      slot.disabled = true;
     });
   },
 
@@ -59,7 +73,9 @@ const QuartoUI = {
     if (!cell) return;
     this.attempt(() => {
       Quarto.placePiece(Number(cell.dataset.row), Number(cell.dataset.column));
-      cell.appendChild(this.els.playbox.firstElementChild);
+      const pieceEl = this.els.playbox.firstElementChild;
+      cell.appendChild(pieceEl);
+      cell.setAttribute('aria-label', `${cell.getAttribute('aria-label')}: ${pieceEl.className.replace('piece ', '')}`);
     });
   },
 
@@ -113,6 +129,8 @@ const QuartoUI = {
     this.els.quarto.disabled = !playing;
     this.els.draw.hidden = !(playing && boardFull);
     document.body.classList.toggle('game-over', !playing);
+    // Lets the CSS hint where the next tap goes: the pool or the board
+    document.body.dataset.phase = !playing ? 'over' : Quarto.phase === 1 ? 'place' : 'give';
   },
 };
 

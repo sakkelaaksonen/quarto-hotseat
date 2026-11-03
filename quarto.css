@@ -1,165 +1,485 @@
-body {
-    background: #000;
-    color: white;
-    font-family: sans-serif;
+/*
+ * Quarto Hot Seat
+ * Landscape tablet/phone lying flat on a table. Board on the left,
+ * everything else in a panel on the right. In portrait the whole layout
+ * is rotated so it is always landscape.
+ */
+
+:root {
+    color-scheme: dark;
+
+    --bg: #000;
+    --fg: #fff;
+    --muted: #aaa;
+    --accent: #f7a8f0;
+    --cell: rgb(255 255 255 / 0.08);
+    --cell-border: #888;
+
+    /* Pieces: same footprint for all, height in fractions of a cell */
+    --piece-footprint: 64cqw;
+    --piece-short: 30cqw;
+    --piece-tall: 60cqw;
+    --hole-depth: 6cqw;
+    --piece-radius: 5cqw;   /* corner rounding of square pieces */
+    --light-top: #f4f4f4;
+    --light-side-a: #cfcfcf;
+    --light-side-b: #8c8c8c;
+    --dark-top: #5e5e5e;
+    --dark-side-a: #3e3e3e;
+    --dark-side-b: #232323;
+
+    /* Board tilt. Width is the limiting factor; rotate-z widens the board most */
+    --tilt-x: 50deg;
+    --tilt-z: 20deg;
+    /* Screen footprint of a 1x1 board at the above tilt (keep in sync) */
+    --footprint-w: 1.28;
+    --footprint-h: 0.82;
+    /* Extra height above the board for tall pieces in the back row,
+       as a fraction of the board side (tall height / 4 * sin(tilt-x)) */
+    --lift-room: 0.12;
+
+    --gap: clamp(0.5rem, 2vmin, 1.25rem);
+    --radius: 0.5rem;
+    --button-h: 2.75rem;
+    --actions-gap: calc(var(--gap) / 2);
+
+    /* vmin is the landscape height in both orientations */
+    font-size: clamp(14px, 3.4vmin, 26px);
 }
 
-h2 {
-    display: inline-block;
-}
-
-.root {
-    min-width: 920px;
-}
-
-div {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, sans-serif;
+    /* Table-top play: no double-tap zoom, text selection or tap flashes */
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}
+
+/* ---------- Page layout ---------- */
+
+.root {
+    position: fixed;
+    inset: 0;
+    width: 100dvw;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 30%);
+    padding: max(var(--gap), env(safe-area-inset-top)) max(var(--gap), env(safe-area-inset-right))
+        max(var(--gap), env(safe-area-inset-bottom)) max(var(--gap), env(safe-area-inset-left));
+    gap: var(--gap);
+}
+
+/* Force landscape: rotate the whole layout when the device is portrait */
+@media (orientation: portrait) {
+    .root {
+        inset: auto;
+        top: 0;
+        left: 0;
+        width: 100dvh;
+        height: 100dvw;
+        transform-origin: top left;
+        transform: rotate(90deg) translateY(-100%);
+    }
+}
+
+/* ---------- Board ---------- */
+
+.board-area {
+    position: relative;
+    container-type: size;
+}
+
 .grid {
-    height: 40rem;
-    width: 40rem;
-    float: left;
-    perspective: 2000px;
-    transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(120px) translateZ(80px)
-        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) translateX(120px) translateZ(80px);*/
+    /* Largest board whose tilted footprint fits the board area */
+    --side: min(100cqw / var(--footprint-w), 100cqh / (var(--footprint-h) + var(--lift-room)));
+
+    position: absolute;
+    /* Shifted down so pieces rising off the back row have room too */
+    top: calc(50% + var(--side) * var(--lift-room) / 2);
+    left: 50%;
+    width: var(--side);
+    height: var(--side);
+    margin: calc(var(--side) / -2) 0 0 calc(var(--side) / -2);
+    display: grid;
+    grid-template: repeat(4, 1fr) / repeat(4, 1fr);
+    gap: 3%;
+    padding: 2%;
+    /* One flat transform for the whole board: cells and pieces are drawn
+       flat, then tilted together. Do not add transform-style: preserve-3d,
+       it makes cells and board coplanar in 3D and breaks click hit-testing. */
+    transform: rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
 }
 
 .grid-cell {
-    height: 24%;
-    width: 24%;
-    margin: 0 0 1px 1px;
-    float: left;
     position: relative;
-    border: 0.3rem solid #aaa;
-    border-radius: 80px;
-    background-color: rgba(255, 255, 255, 0.1);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: max(2px, 0.6cqmin) solid var(--cell-border);
+    border-radius: 6%;
+    background: var(--cell);
+    cursor: pointer;
 }
 
-.grid-cell:hover {
-    background: rgba(255, 120, 220, 0.2);
+/* While placing, free cells glow so it is obvious where to tap */
+[data-phase="place"] .grid-cell:empty {
+    border-color: var(--accent);
 }
 
+.grid-cell.winning {
+    border-color: var(--accent);
+    background: rgb(247 168 240 / 0.35);
+}
 
+/* ---------- Pieces ----------
+ *
+ * Every piece has the same footprint; tall and short differ by real height.
+ * The view is fixed and orthographic, so lifting something by h looks the
+ * same as shifting it inside the board plane by
+ *     -(sin(tilt-z), cos(tilt-z)) * h * tan(tilt-x)
+ * Pieces are therefore drawn from flat faces inside the one tilted board,
+ * with no preserve-3d:
+ *   round:  a capsule along the lift direction (cylinder side) + top circle
+ *   square: two skewed rectangles (visible side faces) + top square
+ * Sizes are in cqw of the piece's container: a cell, pool slot or playbox.
+ */
+
+.grid-cell,
+.pool-slot,
 .playbox {
-    border: 2px solid #ccc;
-    padding: 2rem;
-    width: 8rem;
-    height: 8rem;
-    position: absolute;
-    left: 42rem;
-    margin-top: 3rem;
-    perspective: 2000px;
-    transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(-54px) translateZ(10px)
-        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
-}
-
-.pieces {
-    min-width: 920px;
-    /*width: 100%;*/
-    /*margin:0 0 0 20%;*/
-    padding: 0 0 0.5rem 0;
-    height: 6rem;
-    /*overflow-x: scroll;*/
-
-    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
+    container-type: size;
 }
 
 .piece {
-    position: relative;
-    display: inline-block;
-    margin: 0.3rem;
-    border: 3px solid transparent;
-    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
-}
+    --s: var(--piece-footprint);
+    --r: var(--piece-radius);
+    --h: var(--piece-short);
+    --L: calc(var(--h) * tan(var(--tilt-x)));
+    --vx: calc(var(--L) * sin(var(--tilt-z)));
+    --vy: calc(var(--L) * cos(var(--tilt-z)));
 
-.dark.piece:hover {
-    border-color: #ddd;
-}
+    --top: var(--light-top);
+    --side-a: var(--light-side-a);
+    --side-b: var(--light-side-b);
 
-.light.piece:hover {
-    border-color: #faf;
-}
-
-
-.dark {
-    background: #444;
-}
-
-.light {
-    background: #eee;
-}
-
-.square {
-    border-radius: 3px;
-}
-
-.round {
-    border-radius: 50px;
-}
-
-.hollow:after {
-    content: ' ';
-    width: 50%;
-    height: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    left: 25%;
-    top: 25%;
-    border-radius: 5rem;
     position: absolute;
+    inset: 0;
 }
 
-.short {
-    width: 3.3rem;
-    height: 3.3rem;
+.piece.tall {
+    --h: var(--piece-tall);
 }
 
-.tall {
-    width: 5rem;
-    height: 5rem;
+.piece.dark {
+    --top: var(--dark-top);
+    --side-a: var(--dark-side-a);
+    --side-b: var(--dark-side-b);
 }
 
-.button-container .button {
-    text-decoration: none;
-    padding: 1rem 3rem;
-    text-align: center;
-    border: 1px solid white;
-    background-color: white;
-    color: black;
-    font-size: 1rem;
-    float: right;
-    margin: 0 0.5rem;
+.piece > * {
+    position: absolute;
+    display: block;
 }
 
+/* Top face: the footprint shape, lifted */
+.piece-top {
+    width: var(--s);
+    height: var(--s);
+    left: calc(50% - var(--s) / 2 - var(--vx));
+    top: calc(50% - var(--s) / 2 - var(--vy));
+    background: var(--top);
+}
 
-.grid-cell .piece,
+.square .piece-top {
+    border-radius: var(--r);
+}
+
+.round .piece-top {
+    border-radius: 50%;
+}
+
+.dark .piece-top {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+}
+
+/* Round: cylinder side, shaded across its width */
+.piece-body {
+    width: var(--s);
+    height: calc(var(--s) + var(--L));
+    left: calc(50% - var(--s) / 2 - var(--vx) / 2);
+    top: calc(50% - (var(--s) + var(--L)) / 2 - var(--vy) / 2);
+    border-radius: calc(var(--s) / 2);
+    transform: rotate(calc(-1 * var(--tilt-z)));
+    background: linear-gradient(to right, var(--side-a), var(--side-a) 25%, var(--side-b));
+}
+
+/* Square: front face (bottom edge swept down), between the rounded corners */
+.piece-front {
+    width: calc(var(--s) - 2 * var(--r));
+    height: var(--vy);
+    left: calc(50% - var(--s) / 2 + var(--r) - var(--vx));
+    top: calc(50% + var(--s) / 2 - var(--vy));
+    transform-origin: 0 0;
+    transform: skewX(var(--tilt-z));
+    background: var(--side-a);
+}
+
+/* Square: right face (right edge swept down), between the rounded corners */
+.piece-right {
+    width: var(--vx);
+    height: calc(var(--s) - 2 * var(--r));
+    left: calc(50% + var(--s) / 2 - var(--vx));
+    top: calc(50% - var(--s) / 2 + var(--r) - var(--vy));
+    transform-origin: 0 0;
+    transform: skewY(calc(90deg - var(--tilt-z)));
+    background: var(--side-b);
+}
+
+/* Square: rounded vertical edges. Each visible corner is a thin cylinder
+   (like .piece-body) around that corner's rounding circle; (--cx, --cy) is
+   the circle centre relative to the piece centre. */
+.piece-edge {
+    --c: calc(var(--s) / 2 - var(--r));
+    width: calc(2 * var(--r));
+    height: calc(2 * var(--r) + var(--L));
+    left: calc(50% + var(--cx) - var(--r) - var(--vx) / 2);
+    top: calc(50% + var(--cy) - var(--r) - var(--L) / 2 - var(--vy) / 2);
+    border-radius: var(--r);
+    transform: rotate(calc(-1 * var(--tilt-z)));
+}
+
+.piece-edge-fl {
+    --cx: calc(-1 * var(--c));
+    --cy: var(--c);
+    background: var(--side-a);
+}
+
+.piece-edge-fr {
+    --cx: var(--c);
+    --cy: var(--c);
+    background: linear-gradient(to right, var(--side-a), var(--side-b));
+}
+
+.piece-edge-br {
+    --cx: var(--c);
+    --cy: calc(-1 * var(--c));
+    background: var(--side-b);
+}
+
+/* Hollow: a shallow hole in the top face. The background is the floor;
+   an inset shadow shifted by the hole depth (same lift direction as the
+   pieces) is the inner wall at the back. The front rim hides the rest. */
+.piece-hole {
+    --d: calc(var(--hole-depth) * tan(var(--tilt-x)));
+    --rim: 0 0 0 0 transparent;
+
+    position: absolute;
+    display: block;
+    inset: 25%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--top), #000 60%);
+    box-shadow:
+        inset calc(var(--d) * sin(var(--tilt-z))) calc(var(--d) * cos(var(--tilt-z))) 0 0
+            color-mix(in srgb, var(--top), #000 35%),
+        inset var(--rim);
+}
+
+/* Keep the hole readable on dark pieces */
+.dark .piece-hole {
+    --rim: 0 0 0 1px rgb(255 255 255 / 0.25);
+}
+
+/* Outside the board, pieces get the board's tilt themselves so they look
+   the same everywhere. Scaled down a little and moved down by half the
+   lift so tall pieces stay inside their slot. */
+.pool-slot .piece,
 .playbox .piece {
-    margin: auto;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    transform: translateY(calc(var(--h) * sin(var(--tilt-x)) * 0.85 / 2)) scale(0.85)
+        rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
 }
 
-.button-container .button:disabled {
+/* ---------- Side panel ---------- */
+
+.panel {
+    min-height: 0;
+    display: grid;
+    grid-template:
+        "status  status" auto
+        "next    actions" auto
+        "pool    pool" minmax(0, 1fr)
+        / auto 1fr;
+    gap: var(--gap);
+}
+
+.status {
+    grid-area: status;
+}
+
+.title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.instructions {
+    margin: 0.2em 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.message {
+    min-height: 1.3em;
+    margin: 0.2em 0 0;
+    font-size: 0.9rem;
+    color: var(--accent);
+}
+
+.next {
+    grid-area: next;
+}
+
+/* Number of visible buttons in .actions; Draw appears when the board is full */
+.panel {
+    --buttons: 2;
+}
+
+.panel:has(#js-draw:not([hidden])) {
+    --buttons: 3;
+}
+
+/* Square, exactly as tall as the stacked buttons next to it */
+.playbox {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: calc(var(--buttons) * var(--button-h) + (var(--buttons) - 1) * var(--actions-gap));
+    aspect-ratio: 1;
+    border: 2px dashed var(--muted);
+    border-radius: var(--radius);
+}
+
+[data-phase="place"] .playbox {
+    border-style: solid;
+    border-color: var(--accent);
+}
+
+.actions {
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+    gap: var(--actions-gap);
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--button-h);
+    padding: 0 1rem;
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--fg);
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button[hidden] {
+    display: none;
+}
+
+.button-quarto {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #000;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.button:disabled {
     opacity: 0.4;
     cursor: default;
 }
 
-.message {
-    min-height: 1.2em;
-    margin: 0.5rem 0;
-    color: #faf;
+.pool-area {
+    grid-area: pool;
+    min-height: 0;
+    container-type: size;
 }
 
-/* The hole must read clearly on dark pieces too */
-.dark.hollow:after {
-    background: #000;
-    box-shadow: 0 0 0 2px #bbb;
+.pieces {
+    /* 4 x 4 slots, as large as the space allows */
+    --slot: min(25cqw, 25cqh);
+    display: grid;
+    grid-template-columns: repeat(4, var(--slot));
+    grid-auto-rows: var(--slot);
+    justify-content: center;
+    height: 100%;
+    align-content: center;
 }
 
-.grid-cell.winning {
-    border-color: #faf;
-    background-color: rgba(255, 120, 220, 0.35);
+.pool-slot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    background: none;
+    cursor: pointer;
+}
+
+.pool-slot:disabled {
+    cursor: default;
+}
+
+/* ---------- Interaction feedback ---------- */
+
+@media (hover: hover) {
+    .grid-cell:hover {
+        background: rgb(247 168 240 / 0.2);
+    }
+
+    .pool-slot:not(:disabled):hover {
+        border-color: var(--muted);
+    }
+
+    .button:not(:disabled):hover {
+        filter: brightness(1.2);
+    }
+}
+
+.grid-cell:active,
+.pool-slot:not(:disabled):active {
+    background: rgb(247 168 240 / 0.25);
+}
+
+:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
 }
