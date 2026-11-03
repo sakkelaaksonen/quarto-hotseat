@@ -2,55 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Quarto Proto</title>
-    <script src="piece.js"></script>
-    <script src="quarto-engine.js"></script>
-    <script src="quarto-ui.js"></script>
+    <title>Quarto Hot Seat</title>
+    <script type="module" src="quarto-ui.js"></script>
     <link rel="stylesheet" href="quarto.css">
   </head>
   <body>
-    <!--this div must have no whitespace or anything else
-    TODO: less fragile indexing method
-    -->
     <div class="root">
-      
+
       <div class="button-container">
         <h2>Quarto Hot Seat: </h2>
-        <span id="js-instructions" class="instructions select">
-          
-          <span class="select-text">Select a piece for next player</span>
-          <span class="play-text">Play the selected piece</span>
-        </span>
+        <span id="js-instructions" class="instructions"></span>
         <a id="js-start" class="button" href="?">Restart</a>
-        <button class="button" id="js-quarto">Quarto</button>
-
+        <button type="button" class="button" id="js-quarto">Quarto</button>
+        <button type="button" class="button" id="js-draw" hidden>Draw</button>
+        <p id="js-message" class="message" aria-live="polite"></p>
       </div>
       <div class="pieces" id="js-pieces"></div>
       <div id="js-grid" class="grid">
-        
-        <div class="grid-cell js-grid-cell" id="cell-0-0"></div>
-        <div class="grid-cell js-grid-cell" id="cell-0-1"></div>
-        <div class="grid-cell js-grid-cell" id="cell-0-2"></div>
-        <div class="grid-cell js-grid-cell" id="cell-0-3"></div>
-        
-        <div class="grid-cell js-grid-cell" id="cell-1-0"></div>
-        <div class="grid-cell js-grid-cell" id="cell-1-1"></div>
-        <div class="grid-cell js-grid-cell" id="cell-1-2"></div>
-        <div class="grid-cell js-grid-cell" id="cell-1-3"></div>
-        
-        <div class="grid-cell js-grid-cell" id="cell-2-0"></div>
-        <div class="grid-cell js-grid-cell" id="cell-2-1"></div>
-        <div class="grid-cell js-grid-cell" id="cell-2-2"></div>
-        <div class="grid-cell js-grid-cell" id="cell-2-3"></div>
-        
-        <div class="grid-cell js-grid-cell" id="cell-3-0"></div>
-        <div class="grid-cell js-grid-cell" id="cell-3-1"></div>
-        <div class="grid-cell js-grid-cell" id="cell-3-2"></div>
-        <div class="grid-cell js-grid-cell" id="cell-3-3"></div>
-        
+
+        <div class="grid-cell js-grid-cell" data-row="0" data-column="0"></div>
+        <div class="grid-cell js-grid-cell" data-row="0" data-column="1"></div>
+        <div class="grid-cell js-grid-cell" data-row="0" data-column="2"></div>
+        <div class="grid-cell js-grid-cell" data-row="0" data-column="3"></div>
+
+        <div class="grid-cell js-grid-cell" data-row="1" data-column="0"></div>
+        <div class="grid-cell js-grid-cell" data-row="1" data-column="1"></div>
+        <div class="grid-cell js-grid-cell" data-row="1" data-column="2"></div>
+        <div class="grid-cell js-grid-cell" data-row="1" data-column="3"></div>
+
+        <div class="grid-cell js-grid-cell" data-row="2" data-column="0"></div>
+        <div class="grid-cell js-grid-cell" data-row="2" data-column="1"></div>
+        <div class="grid-cell js-grid-cell" data-row="2" data-column="2"></div>
+        <div class="grid-cell js-grid-cell" data-row="2" data-column="3"></div>
+
+        <div class="grid-cell js-grid-cell" data-row="3" data-column="0"></div>
+        <div class="grid-cell js-grid-cell" data-row="3" data-column="1"></div>
+        <div class="grid-cell js-grid-cell" data-row="3" data-column="2"></div>
+        <div class="grid-cell js-grid-cell" data-row="3" data-column="3"></div>
+
       </div>
       <div class="playbox" id="js-playbox"></div>
-      
+
     </div>
   </body>
 </html>

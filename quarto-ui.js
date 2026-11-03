@@ -1,161 +1,119 @@
-var QuartoUI = (function(Quarto) {
+import Quarto from './quarto-engine.js';
 
+// The UI only translates clicks into engine calls and renders engine state.
+// All game rules live in quarto-engine.js.
+const QuartoUI = {
+  els: null,
 
-  //events
-  // Game starts
-  // Player selects piece
-  // Player plays piece
-  // Player declares Quarto
+  init() {
+    Quarto.start();
+    const $ = (selector) => document.querySelector(selector);
+    this.els = {
+      pieces: $('#js-pieces'),
+      grid: $('#js-grid'),
+      playbox: $('#js-playbox'),
+      quarto: $('#js-quarto'),
+      draw: $('#js-draw'),
+      text: $('#js-instructions'),
+      message: $('#js-message'),
+    };
 
-  return {
-    selectors: {
-      playbox: '#js-playbox',
-      grid: '#js-grid',
-      pieces: '#js-pieces',
-      button: '#js-quarto',
-      gridCell:'.js-grid-cell',
-      piece: '.js-piece',
-      text:'#js-instructions'
-
-    },
-    lastMove: {
-      row: null,
-      column: null,
-      piece: null
-      // pieceIndex:null,
-    },
-    gameOver:false,
-    init: function() {
-      Quarto.start();
-      //Bind events
-      var piecesDOM = document
-        .querySelector(this.selectors.pieces);
-      
-        piecesDOM.addEventListener('click', this.givePiece.bind(this), true);
-        Quarto.pieces.map(function(piece){
-          var pieceDOM = document.createElement('div');
-          pieceDOM.className = 'piece js-piece ' + piece.getPropertyString();
-          piecesDOM.appendChild(pieceDOM);
-        });
-
-      document
-        .querySelector(this.selectors.grid)
-        .addEventListener('click', this.setPiece.bind(this), true);
-
-      document
-        .querySelector(this.selectors.button)
-        .addEventListener('click',this.shoutQuarto.bind(this),true);
-
-      
-    },
-    givePiece: function(e) {
-      //Move piece from piecebox to playbox
-      
-      console.log(e);
-      if(this.gameOver) {
-        return false;
-      }
-
-      // if(e.originalTarget){
-      var thePiece = (e.originalTarget || e.srcElement);
-      // } else if (e.toElement) {
-      //       var thePiece = e.toElement;
-      // }
-      // else {
-      //   alert('wtf');
-      // }
-      console.log(thePiece.className);
-      
-      if(! /js-piece/.test(thePiece.className))  {
-        console.log('not a game piece');
-        return false;
-      }
-      if (Quarto.phase !== 0) {
-        console.log('Set your piece first...');
-        return false;
-      }
-
-
-      var pieceIndex = 0;
-      var sibling = thePiece; //Just a temp var
-      while( (sibling = sibling.previousSibling) != null ) {
-        // console.log(pieceIndex, sibling);
-        pieceIndex++;
-      }
-      // console.log(pieceIndex);
-      document
-        .querySelector(this.selectors.playbox)
-        .appendChild(thePiece);
-
-      this.lastMove.piece = Quarto.givePiece(pieceIndex);
-      Quarto.phase = 1;
-      this.toggleText();
-      return this;
-      
-    },
-    setPiece: function(e) {
-       if(this.gameOver) {
-        return false;
-      }
-
-      if (Quarto.phase !== 1) {
-        console.log('Give a piece to player first...');
-        return false;
-      }
-
-      var theSlot = (e.originalTarget || e.srcElement);
-
-      if( !/js-grid-cell/.test(theSlot.className) )  {
-        console.log('Not a grid cell');
-        return false;
-      }
-      var thePiece = document
-                      .querySelector(this.selectors.playbox)
-                      .children.item(0);
-      //TODO better grid tokenizer. Not bad but could be better.
-      var coords = theSlot.id.split('-');
-      coords.shift(); //discard 'cell'
-      this.lastMove.row = coords.shift();
-      this.lastMove.column = coords.shift();
-      //move piece from playbox to grid
-      try{
-        Quarto.setPieceToGrid(this.lastMove.row, this.lastMove.column, this.lastMove.piece); 
-      } catch(e) {
-        alert('Can you not see there is already a piece on that slot');
-        return this;
-      }
-
-      theSlot.appendChild(thePiece);
-      
-      Quarto.phase = 0;
-      this.toggleText();
-      return this;
-    },
-    toggleText:function(){
-      var textNode = document.querySelector(this.selectors.text);      
-      textNode.classList.toggle('select');
-      textNode.classList.toggle('play');
-      
-      return this;
-
-    },
-    shoutQuarto: function() {
-      console.log(this.lastMove)
-      if (Quarto.isQuarto(this.lastMove.piece,this.lastMove.row, this.lastMove.column )) {
-        this.gameOver = true;
-        if (confirm("You Win!\n Do you want to play another round?")) {
-          //easy way out...
-          window.location.reload();
-        };
-
-      }
-      return this;
+    for (const piece of Quarto.pieces) {
+      const pieceEl = document.createElement('div');
+      pieceEl.className = `piece js-piece ${piece.getPropertyString()}`;
+      pieceEl.title = piece.getPropertyString();
+      pieceEl.dataset.pieceId = piece.getId();
+      this.els.pieces.appendChild(pieceEl);
     }
 
-  };
+    this.els.pieces.addEventListener('click', (e) => this.givePiece(e));
+    this.els.grid.addEventListener('click', (e) => this.setPiece(e));
+    this.els.quarto.addEventListener('click', () => this.shoutQuarto());
+    this.els.draw.addEventListener('click', () => this.declareDraw());
 
-})(Quarto);
+    this.render();
+  },
 
-document.addEventListener("DOMContentLoaded", function(event) {
-  QuartoUI.init();
-});
+  // Runs an engine action; rule violations are shown to the player.
+  attempt(action) {
+    try {
+      action();
+      this.showMessage('');
+    } catch (err) {
+      this.showMessage(err.message);
+    }
+    this.render();
+  },
+
+  givePiece(e) {
+    const pieceEl = e.target.closest('.js-piece');
+    if (!pieceEl) return;
+    this.attempt(() => {
+      Quarto.selectPiece(Number(pieceEl.dataset.pieceId));
+      this.els.playbox.appendChild(pieceEl);
+    });
+  },
+
+  setPiece(e) {
+    const cell = e.target.closest('.js-grid-cell');
+    if (!cell) return;
+    this.attempt(() => {
+      Quarto.placePiece(Number(cell.dataset.row), Number(cell.dataset.column));
+      cell.appendChild(this.els.playbox.firstElementChild);
+    });
+  },
+
+  shoutQuarto() {
+    const { result, lines } = Quarto.claimQuarto();
+    if (result === 'won') {
+      for (const { cells } of lines) {
+        for (const [row, column] of cells) {
+          this.cell(row, column).classList.add('winning');
+        }
+      }
+      const kinds = lines.map((l) => `${l.properties.join(' & ')} ${l.line}`).join(', ');
+      this.showMessage(`Quarto! ${kinds}. You win!`);
+    } else if (result === 'draw') {
+      this.showMessage('No Quarto there, and the board is full. It is a draw.');
+    } else if (result === 'no-quarto') {
+      this.showMessage('No Quarto there.');
+    } else {
+      this.showMessage('Quarto can only be shouted right after placing a piece.');
+    }
+    this.render();
+  },
+
+  declareDraw() {
+    this.attempt(() => Quarto.declareDraw());
+    if (Quarto.status === 'draw') this.showMessage('It is a draw.');
+  },
+
+  cell(row, column) {
+    return this.els.grid.querySelector(`[data-row="${row}"][data-column="${column}"]`);
+  },
+
+  showMessage(text) {
+    this.els.message.textContent = text;
+  },
+
+  render() {
+    const playing = Quarto.status === 'playing';
+    const boardFull = Quarto.isBoardFull();
+    let text;
+    if (!playing) {
+      text = 'Game over. Press Restart to play again.';
+    } else if (Quarto.phase === 1) {
+      text = 'Play the selected piece';
+    } else if (boardFull) {
+      text = 'Board is full: shout Quarto, or call it a draw';
+    } else {
+      text = 'Select a piece for next player';
+    }
+    this.els.text.textContent = text;
+    this.els.quarto.disabled = !playing;
+    this.els.draw.hidden = !(playing && boardFull);
+    document.body.classList.toggle('game-over', !playing);
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => QuartoUI.init());

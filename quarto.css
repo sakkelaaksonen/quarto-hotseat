@@ -1,156 +1,165 @@
-body{
-  background:#000;
-  color:white;
-  font-family: sans-serif;
+body {
+    background: #000;
+    color: white;
+    font-family: sans-serif;
 }
 
-h2 {display: inline-block; }
-.root {  min-width:920px; }
+h2 {
+    display: inline-block;
+}
 
-div { box-sizing:border-box; }
+.root {
+    min-width: 920px;
+}
+
+div {
+    box-sizing: border-box;
+}
 
 .grid {
-    height:40rem;
-    width:40rem;
+    height: 40rem;
+    width: 40rem;
     float: left;
-    perspective:2000px;
+    perspective: 2000px;
     transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(120px) translateZ(80px)
-
-    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) translateX(120px) translateZ(80px);*/
-  }
+        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) translateX(120px) translateZ(80px);*/
+}
 
 .grid-cell {
-  height:24%;
-  width: 24%;
-  margin:0 0 1px 1px;
-  float: left;
-  position: relative;
-  border:0.3rem solid #aaa;
-  border-radius:80px;
-  background-color: rgba(255,255,255,0.1);
+    height: 24%;
+    width: 24%;
+    margin: 0 0 1px 1px;
+    float: left;
+    position: relative;
+    border: 0.3rem solid #aaa;
+    border-radius: 80px;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .grid-cell:hover {
-  background: rgba(255,120,220,0.2);
+    background: rgba(255, 120, 220, 0.2);
 }
 
 
 .playbox {
-  border:2px solid #ccc;
-  padding:2rem;
-  width:8rem;
-  height:8rem;
-  position: absolute;
-  left: 42rem;
-  margin-top:3rem;
-  perspective:2000px;
-  transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(-54px) translateZ(10px)
-  /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
+    border: 2px solid #ccc;
+    padding: 2rem;
+    width: 8rem;
+    height: 8rem;
+    position: absolute;
+    left: 42rem;
+    margin-top: 3rem;
+    perspective: 2000px;
+    transform: rotateX(65deg) skewX(-10deg) rotateZ(30deg) translateX(-54px) translateZ(10px)
+        /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
 }
 
 .pieces {
-  min-width:920px;
-  /*width: 100%;*/
-  /*margin:0 0 0 20%;*/
-  padding:0 0 0,5rem 0;
-  height:6rem;
-  /*overflow-x: scroll;*/
+    min-width: 920px;
+    /*width: 100%;*/
+    /*margin:0 0 0 20%;*/
+    padding: 0 0 0.5rem 0;
+    height: 6rem;
+    /*overflow-x: scroll;*/
 
-  /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
+    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
 }
 
 .piece {
-  position: relative;
-  display: inline-block;
-  margin: 0.3rem;
-  border:3px solid transparent;
-  /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
+    position: relative;
+    display: inline-block;
+    margin: 0.3rem;
+    border: 3px solid transparent;
+    /*transform:  rotateX(72deg) skewX(-5deg) rotateZ(35deg) ;*/
 }
 
 .dark.piece:hover {
-  border-color:#ddd;
+    border-color: #ddd;
 }
 
 .light.piece:hover {
-  border-color:#faf;
+    border-color: #faf;
 }
 
 
 .dark {
-  background:#444;
+    background: #444;
 }
 
 .light {
-  background:#eee;
+    background: #eee;
 }
 
 .square {
-  border-radius:3px;
+    border-radius: 3px;
 }
 
 .round {
-  border-radius:50px;
+    border-radius: 50px;
 }
 
-.full {}
-
-.hollow:after  {
-  content:' ';
-  width:50%;
-  height:50%;
-  background:rgba(0,0,0,0.5);
-  left:25%;
-  top:25%;
-  border-radius: 5rem;
-  position: absolute;
+.hollow:after {
+    content: ' ';
+    width: 50%;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    left: 25%;
+    top: 25%;
+    border-radius: 5rem;
+    position: absolute;
 }
 
 .short {
-  width:3.3rem;
-  height:3.3rem;
+    width: 3.3rem;
+    height: 3.3rem;
 }
 
 .tall {
-  width:5rem;
-  height:5rem;
-}
-
-.button-container {
-
+    width: 5rem;
+    height: 5rem;
 }
 
 .button-container .button {
- text-decoration: none;
-  padding:1rem 3rem;
-  text-align: center;
-  border:1px solid white;
-  background-color:white;
-  color:black;
-  font-size:1rem;
-  float: right;
-  margin:0 0.5rem;
+    text-decoration: none;
+    padding: 1rem 3rem;
+    text-align: center;
+    border: 1px solid white;
+    background-color: white;
+    color: black;
+    font-size: 1rem;
+    float: right;
+    margin: 0 0.5rem;
 }
 
 
 .grid-cell .piece,
 .playbox .piece {
-  margin: auto;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
-.instructions.play .play-text {
-  display: inline-block;
+.button-container .button:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
 
-.instructions.play .select-text {
-  display: none;
+.message {
+    min-height: 1.2em;
+    margin: 0.5rem 0;
+    color: #faf;
 }
 
-.instructions.select .play-text {
-  display: none;
+/* The hole must read clearly on dark pieces too */
+.dark.hollow:after {
+    background: #000;
+    box-shadow: 0 0 0 2px #bbb;
 }
 
-.instructions.select .select-text {
- display: inline-block;
+.grid-cell.winning {
+    border-color: #faf;
+    background-color: rgba(255, 120, 220, 0.35);
 }
