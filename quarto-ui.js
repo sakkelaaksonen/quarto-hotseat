@@ -50,7 +50,13 @@ const QuartoUI = {
     if (piece.isRound()) {
       pieceEl.append(part('piece-body'));
     } else {
-      pieceEl.append(part('piece-front'), part('piece-right'));
+      pieceEl.append(
+        part('piece-front'),
+        part('piece-right'),
+        part('piece-edge piece-edge-fl'),
+        part('piece-edge piece-edge-fr'),
+        part('piece-edge piece-edge-br'),
+      );
     }
     const top = part('piece-top');
     if (piece.isHollow()) top.append(part('piece-hole'));

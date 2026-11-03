@@ -20,6 +20,7 @@
     --piece-short: 30cqw;
     --piece-tall: 60cqw;
     --hole-depth: 6cqw;
+    --piece-radius: 5cqw;   /* corner rounding of square pieces */
     --light-top: #f4f4f4;
     --light-side-a: #cfcfcf;
     --light-side-b: #8c8c8c;
@@ -170,6 +171,7 @@ button {
 
 .piece {
     --s: var(--piece-footprint);
+    --r: var(--piece-radius);
     --h: var(--piece-short);
     --L: calc(var(--h) * tan(var(--tilt-x)));
     --vx: calc(var(--L) * sin(var(--tilt-z)));
@@ -207,6 +209,10 @@ button {
     background: var(--top);
 }
 
+.square .piece-top {
+    border-radius: var(--r);
+}
+
 .round .piece-top {
     border-radius: 50%;
 }
@@ -226,25 +232,56 @@ button {
     background: linear-gradient(to right, var(--side-a), var(--side-a) 25%, var(--side-b));
 }
 
-/* Square: front face (bottom edge swept down) */
+/* Square: front face (bottom edge swept down), between the rounded corners */
 .piece-front {
-    width: var(--s);
+    width: calc(var(--s) - 2 * var(--r));
     height: var(--vy);
-    left: calc(50% - var(--s) / 2 - var(--vx));
+    left: calc(50% - var(--s) / 2 + var(--r) - var(--vx));
     top: calc(50% + var(--s) / 2 - var(--vy));
     transform-origin: 0 0;
     transform: skewX(var(--tilt-z));
     background: var(--side-a);
 }
 
-/* Square: right face (right edge swept down) */
+/* Square: right face (right edge swept down), between the rounded corners */
 .piece-right {
     width: var(--vx);
-    height: var(--s);
+    height: calc(var(--s) - 2 * var(--r));
     left: calc(50% + var(--s) / 2 - var(--vx));
-    top: calc(50% - var(--s) / 2 - var(--vy));
+    top: calc(50% - var(--s) / 2 + var(--r) - var(--vy));
     transform-origin: 0 0;
     transform: skewY(calc(90deg - var(--tilt-z)));
+    background: var(--side-b);
+}
+
+/* Square: rounded vertical edges. Each visible corner is a thin cylinder
+   (like .piece-body) around that corner's rounding circle; (--cx, --cy) is
+   the circle centre relative to the piece centre. */
+.piece-edge {
+    --c: calc(var(--s) / 2 - var(--r));
+    width: calc(2 * var(--r));
+    height: calc(2 * var(--r) + var(--L));
+    left: calc(50% + var(--cx) - var(--r) - var(--vx) / 2);
+    top: calc(50% + var(--cy) - var(--r) - var(--L) / 2 - var(--vy) / 2);
+    border-radius: var(--r);
+    transform: rotate(calc(-1 * var(--tilt-z)));
+}
+
+.piece-edge-fl {
+    --cx: calc(-1 * var(--c));
+    --cy: var(--c);
+    background: var(--side-a);
+}
+
+.piece-edge-fr {
+    --cx: var(--c);
+    --cy: var(--c);
+    background: linear-gradient(to right, var(--side-a), var(--side-b));
+}
+
+.piece-edge-br {
+    --cx: var(--c);
+    --cy: calc(-1 * var(--c));
     background: var(--side-b);
 }
 
