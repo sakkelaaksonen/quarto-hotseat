@@ -40,6 +40,8 @@
 
     --gap: clamp(0.5rem, 2vmin, 1.25rem);
     --radius: 0.5rem;
+    --button-h: 2.75rem;
+    --actions-gap: calc(var(--gap) / 2);
 
     /* vmin is the landscape height in both orientations */
     font-size: clamp(14px, 3.4vmin, 26px);
@@ -360,11 +362,21 @@ button {
     grid-area: next;
 }
 
+/* Number of visible buttons in .actions; Draw appears when the board is full */
+.panel {
+    --buttons: 2;
+}
+
+.panel:has(#js-draw:not([hidden])) {
+    --buttons: 3;
+}
+
+/* Square, exactly as tall as the stacked buttons next to it */
 .playbox {
     position: relative;
     display: grid;
     place-items: center;
-    width: 5rem;
+    height: calc(var(--buttons) * var(--button-h) + (var(--buttons) - 1) * var(--actions-gap));
     aspect-ratio: 1;
     border: 2px dashed var(--muted);
     border-radius: var(--radius);
@@ -379,14 +391,14 @@ button {
     grid-area: actions;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--gap) / 2);
+    gap: var(--actions-gap);
 }
 
 .button {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 2.75rem;
+    height: var(--button-h);
     padding: 0 1rem;
     border: 1px solid var(--fg);
     border-radius: var(--radius);
@@ -442,9 +454,7 @@ button {
     cursor: pointer;
 }
 
-/* Empty slot keeps the 4 x 4 pool readable after its piece is taken */
 .pool-slot:disabled {
-    border: 1px dashed rgb(255 255 255 / 0.15);
     cursor: default;
 }
 
