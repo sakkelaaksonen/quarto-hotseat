@@ -14,8 +14,17 @@
     --accent: #f7a8f0;
     --cell: rgb(255 255 255 / 0.08);
     --cell-border: #888;
-    --piece-light: #eee;
-    --piece-dark: #4a4a4a;
+
+    /* Pieces: same footprint for all, height in fractions of a cell */
+    --piece-footprint: 64cqw;
+    --piece-short: 30cqw;
+    --piece-tall: 60cqw;
+    --light-top: #f4f4f4;
+    --light-side-a: #cfcfcf;
+    --light-side-b: #8c8c8c;
+    --dark-top: #5e5e5e;
+    --dark-side-a: #3e3e3e;
+    --dark-side-b: #232323;
 
     /* Board tilt. Width is the limiting factor; rotate-z widens the board most */
     --tilt-x: 50deg;
@@ -23,6 +32,9 @@
     /* Screen footprint of a 1x1 board at the above tilt (keep in sync) */
     --footprint-w: 1.28;
     --footprint-h: 0.82;
+    /* Extra height above the board for tall pieces in the back row,
+       as a fraction of the board side (tall height / 4 * sin(tilt-x)) */
+    --lift-room: 0.12;
 
     --gap: clamp(0.5rem, 2vmin, 1.25rem);
     --radius: 0.5rem;
@@ -96,10 +108,11 @@ button {
 
 .grid {
     /* Largest board whose tilted footprint fits the board area */
-    --side: min(100cqw / var(--footprint-w), 100cqh / var(--footprint-h));
+    --side: min(100cqw / var(--footprint-w), 100cqh / (var(--footprint-h) + var(--lift-room)));
 
     position: absolute;
-    top: 50%;
+    /* Shifted down so pieces rising off the back row have room too */
+    top: calc(50% + var(--side) * var(--lift-room) / 2);
     left: 50%;
     width: var(--side);
     height: var(--side);
@@ -135,48 +148,122 @@ button {
     background: rgb(247 168 240 / 0.35);
 }
 
-/* ---------- Pieces ---------- */
+/* ---------- Pieces ----------
+ *
+ * Every piece has the same footprint; tall and short differ by real height.
+ * The view is fixed and orthographic, so lifting something by h looks the
+ * same as shifting it inside the board plane by
+ *     -(sin(tilt-z), cos(tilt-z)) * h * tan(tilt-x)
+ * Pieces are therefore drawn from flat faces inside the one tilted board,
+ * with no preserve-3d:
+ *   round:  a capsule along the lift direction (cylinder side) + top circle
+ *   square: two skewed rectangles (visible side faces) + top square
+ * Sizes are in cqw of the piece's container: a cell, pool slot or playbox.
+ */
+
+.grid-cell,
+.pool-slot,
+.playbox {
+    container-type: size;
+}
 
 .piece {
-    position: relative;
-    display: block;
-    aspect-ratio: 1;
-    border-radius: 8%;
+    --s: var(--piece-footprint);
+    --h: var(--piece-short);
+    --L: calc(var(--h) * tan(var(--tilt-x)));
+    --vx: calc(var(--L) * sin(var(--tilt-z)));
+    --vy: calc(var(--L) * cos(var(--tilt-z)));
+
+    --top: var(--light-top);
+    --side-a: var(--light-side-a);
+    --side-b: var(--light-side-b);
+
+    position: absolute;
+    inset: 0;
 }
 
-.round {
+.piece.tall {
+    --h: var(--piece-tall);
+}
+
+.piece.dark {
+    --top: var(--dark-top);
+    --side-a: var(--dark-side-a);
+    --side-b: var(--dark-side-b);
+}
+
+.piece > * {
+    position: absolute;
+    display: block;
+}
+
+/* Top face: the footprint shape, lifted */
+.piece-top {
+    width: var(--s);
+    height: var(--s);
+    left: calc(50% - var(--s) / 2 - var(--vx));
+    top: calc(50% - var(--s) / 2 - var(--vy));
+    background: var(--top);
+}
+
+.round .piece-top {
     border-radius: 50%;
 }
 
-.short {
-    width: 58%;
+.dark .piece-top {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
 }
 
-.tall {
-    width: 86%;
+/* Round: cylinder side, shaded across its width */
+.piece-body {
+    width: var(--s);
+    height: calc(var(--s) + var(--L));
+    left: calc(50% - var(--s) / 2 - var(--vx) / 2);
+    top: calc(50% - (var(--s) + var(--L)) / 2 - var(--vy) / 2);
+    border-radius: calc(var(--s) / 2);
+    transform: rotate(calc(-1 * var(--tilt-z)));
+    background: linear-gradient(to right, var(--side-a), var(--side-a) 25%, var(--side-b));
 }
 
-.light {
-    background: var(--piece-light);
+/* Square: front face (bottom edge swept down) */
+.piece-front {
+    width: var(--s);
+    height: var(--vy);
+    left: calc(50% - var(--s) / 2 - var(--vx));
+    top: calc(50% + var(--s) / 2 - var(--vy));
+    transform-origin: 0 0;
+    transform: skewX(var(--tilt-z));
+    background: var(--side-a);
 }
 
-.dark {
-    background: var(--piece-dark);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+/* Square: right face (right edge swept down) */
+.piece-right {
+    width: var(--vx);
+    height: var(--s);
+    left: calc(50% + var(--s) / 2 - var(--vx));
+    top: calc(50% - var(--s) / 2 - var(--vy));
+    transform-origin: 0 0;
+    transform: skewY(calc(90deg - var(--tilt-z)));
+    background: var(--side-b);
 }
 
-.hollow::after {
-    content: "";
+/* Hollow: a hole in the top face */
+.piece-hole {
     position: absolute;
+    display: block;
     inset: 25%;
     border-radius: 50%;
-    background: rgb(0 0 0 / 0.5);
+    background: #0a0a0a;
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.15);
 }
 
-/* The hole must read clearly on dark pieces too */
-.dark.hollow::after {
-    background: #000;
-    box-shadow: 0 0 0 2px #bbb;
+/* Outside the board, pieces get the board's tilt themselves so they look
+   the same everywhere. Scaled down a little and moved down by half the
+   lift so tall pieces stay inside their slot. */
+.pool-slot .piece,
+.playbox .piece {
+    transform: translateY(calc(var(--h) * sin(var(--tilt-x)) * 0.85 / 2)) scale(0.85)
+        rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
 }
 
 /* ---------- Side panel ---------- */
@@ -223,6 +310,7 @@ button {
 }
 
 .playbox {
+    position: relative;
     display: grid;
     place-items: center;
     width: 5rem;
@@ -293,6 +381,7 @@ button {
 }
 
 .pool-slot {
+    position: relative;
     display: grid;
     place-items: center;
     padding: 0;
@@ -306,16 +395,6 @@ button {
 .pool-slot:disabled {
     border: 1px dashed rgb(255 255 255 / 0.15);
     cursor: default;
-}
-
-.playbox .piece,
-.pool-slot .piece {
-    width: 64%;
-}
-
-.playbox .piece.tall,
-.pool-slot .piece.tall {
-    width: 90%;
 }
 
 /* ---------- Interaction feedback ---------- */

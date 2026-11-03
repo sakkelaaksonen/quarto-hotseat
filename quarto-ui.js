@@ -26,9 +26,7 @@ const QuartoUI = {
       slot.className = 'pool-slot js-piece';
       slot.dataset.pieceId = piece.getId();
       slot.setAttribute('aria-label', piece.getPropertyString());
-      const pieceEl = document.createElement('span');
-      pieceEl.className = `piece ${piece.getPropertyString()}`;
-      slot.appendChild(pieceEl);
+      slot.appendChild(this.createPiece(piece));
       this.els.pieces.appendChild(slot);
     }
 
@@ -38,6 +36,26 @@ const QuartoUI = {
     this.els.draw.addEventListener('click', () => this.declareDraw());
 
     this.render();
+  },
+
+  // A piece is drawn from flat faces (see quarto.css): the visible sides,
+  // then the top face, with a hole if hollow.
+  createPiece(piece) {
+    const part = (name) => {
+      const el = document.createElement('span');
+      el.className = name;
+      return el;
+    };
+    const pieceEl = part(`piece ${piece.getPropertyString()}`);
+    if (piece.isRound()) {
+      pieceEl.append(part('piece-body'));
+    } else {
+      pieceEl.append(part('piece-front'), part('piece-right'));
+    }
+    const top = part('piece-top');
+    if (piece.isHollow()) top.append(part('piece-hole'));
+    pieceEl.append(top);
+    return pieceEl;
   },
 
   // Runs an engine action; rule violations are shown to the player.
