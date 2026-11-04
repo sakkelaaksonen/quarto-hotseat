@@ -14,6 +14,8 @@ const QuartoUI = {
       playbox: $('#js-playbox'),
       quarto: $('#js-quarto'),
       draw: $('#js-draw'),
+      help: $('#js-help'),
+      helpOpen: $('#js-help-open'),
       text: $('#js-instructions'),
       message: $('#js-message'),
     };
@@ -34,6 +36,11 @@ const QuartoUI = {
     this.els.grid.addEventListener('click', (e) => this.setPiece(e));
     this.els.quarto.addEventListener('click', () => this.shoutQuarto());
     this.els.draw.addEventListener('click', () => this.declareDraw());
+    this.els.helpOpen.addEventListener('click', () => this.els.help.showModal());
+    // Tapping the backdrop (outside .help-content) closes the dialog
+    this.els.help.addEventListener('click', (e) => {
+      if (e.target === this.els.help) this.els.help.close();
+    });
 
     this.render();
   },
@@ -65,6 +72,8 @@ const QuartoUI = {
       Quarto.selectPiece(Number(slot.dataset.pieceId));
       this.els.playbox.appendChild(slot.firstElementChild);
       slot.disabled = true;
+      // The focused slot is now disabled; continue on the board instead
+      this.els.grid.querySelector('.grid-cell:empty')?.focus();
     });
   },
 

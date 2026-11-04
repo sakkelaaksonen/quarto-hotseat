@@ -105,7 +105,17 @@ button {
 
 /* ---------- Board ---------- */
 
+/* The panel comes first in the HTML so keyboard focus starts there
+   ("?", buttons, pieces) and reaches the board last. Visually the board
+   stays on the left. */
+.panel {
+    grid-column: 2;
+    grid-row: 1;
+}
+
 .board-area {
+    grid-column: 1;
+    grid-row: 1;
     position: relative;
     container-type: size;
 }
@@ -367,6 +377,37 @@ button {
     color: var(--muted);
 }
 
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+/* Small round "?" next to the title. The invisible ::after extends the tap
+   target well beyond the visible circle. */
+.help-open {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    padding: 0;
+    border: 1px solid var(--muted);
+    border-radius: 50%;
+    background: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.help-open::after {
+    content: "";
+    position: absolute;
+    inset: -0.6rem;
+}
+
 .instructions {
     margin: 0.2em 0 0;
     font-size: 1.1rem;
@@ -471,6 +512,86 @@ button {
 
 .pool-slot:disabled {
     cursor: default;
+}
+
+/* ---------- How to play dialog ----------
+ * A modal dialog is rendered above the page, outside the rotated .root, so
+ * it gets the same portrait rotation itself. vmax/vmin are the landscape
+ * width/height in both orientations.
+ */
+
+.help {
+    width: min(36rem, 90vmax);
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    border: 1px solid var(--muted);
+    border-radius: var(--radius);
+    background: #111;
+    color: var(--fg);
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.help::backdrop {
+    background: rgb(0 0 0 / 0.7);
+}
+
+@media (orientation: portrait) {
+    .help {
+        rotate: 90deg;
+    }
+}
+
+/* The content scrolls; the close button stays in the corner above it */
+.help-content {
+    max-height: calc(90vmin - 2px);
+    overflow: auto;
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.help h2 {
+    margin: 0 2rem 0.5em 0;
+    font-size: 1.1rem;
+}
+
+.help h3 {
+    margin: 1em 0 0.25em;
+    font-size: 0.9rem;
+    color: var(--accent);
+}
+
+.help p,
+.help ol {
+    margin: 0 0 0.5em;
+}
+
+.help-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--muted);
+    border-radius: 50%;
+    background: #111;
+    color: var(--fg);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* Larger invisible tap target, like the "?" button */
+.help-close::after {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
 }
 
 /* ---------- Interaction feedback ---------- */

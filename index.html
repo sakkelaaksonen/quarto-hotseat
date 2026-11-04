@@ -11,6 +11,31 @@
   <body>
     <main class="root">
 
+      <aside class="panel">
+        <header class="status">
+          <div class="title-row">
+            <h1 class="title">Quarto</h1>
+            <button type="button" class="help-open" id="js-help-open" aria-label="How to play">?</button>
+          </div>
+          <p id="js-instructions" class="instructions"></p>
+          <p id="js-message" class="message" aria-live="polite"></p>
+        </header>
+
+        <div class="next">
+          <section class="playbox" id="js-playbox" aria-label="Piece to play"></section>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="button button-quarto" id="js-quarto">Quarto!</button>
+          <button type="button" class="button" id="js-draw" hidden>Draw</button>
+          <a id="js-start" class="button" href="?">Restart</a>
+        </div>
+
+        <div class="pool-area">
+          <section class="pieces" id="js-pieces" aria-label="Available pieces"></section>
+        </div>
+      </aside>
+
       <section class="board-area" aria-label="Board">
         <div id="js-grid" class="grid">
           <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="0" aria-label="Row 1, column 1"></button>
@@ -32,29 +57,48 @@
         </div>
       </section>
 
-      <aside class="panel">
-        <header class="status">
-          <h1 class="title">Quarto</h1>
-          <p id="js-instructions" class="instructions"></p>
-          <p id="js-message" class="message" aria-live="polite"></p>
-        </header>
-
-        <div class="next">
-          <section class="playbox" id="js-playbox" aria-label="Piece to play"></section>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="button button-quarto" id="js-quarto">Quarto!</button>
-          <button type="button" class="button" id="js-draw" hidden>Draw</button>
-          <a id="js-start" class="button" href="?">Restart</a>
-        </div>
-
-        <div class="pool-area">
-          <section class="pieces" id="js-pieces" aria-label="Available pieces"></section>
-        </div>
-      </aside>
-
     </main>
+
+    <dialog class="help" id="js-help" aria-labelledby="js-help-title">
+      <form method="dialog">
+        <button type="submit" class="help-close" aria-label="Close">&times;</button>
+      </form>
+      <div class="help-content">
+        <h2 id="js-help-title">How to play</h2>
+
+        <p>
+          Make a line of four pieces that share at least one trait: a row,
+          a column or a diagonal.
+        </p>
+
+        <h3>The pieces</h3>
+        <p>
+          Each of the 16 pieces is <strong>light or dark</strong>,
+          <strong>round or square</strong>, <strong>tall or short</strong> and
+          <strong>filled or hollow</strong>.
+        </p>
+
+        <h3>A turn</h3>
+        <ol>
+          <li>Pick a piece from the right for your opponent.</li>
+          <li>Your opponent places it on any free cell.</li>
+          <li>Then they pick a piece for you, and so on.</li>
+        </ol>
+        <p>Keep track of whose turn it is yourselves.</p>
+
+        <h3>Quarto!</h3>
+        <p>
+          Completed a line? Press <strong>Quarto!</strong> right after placing
+          the piece, before picking the next one. Miss it and it is gone:
+          neither player can claim that line later.
+        </p>
+
+        <h3>Draw</h3>
+        <p>
+          If the board fills up without a Quarto, press <strong>Draw</strong>.
+        </p>
+      </div>
+    </dialog>
 
     <!--
       Piece markup, cloned by quarto-ui.js. The UI adds the property classes
