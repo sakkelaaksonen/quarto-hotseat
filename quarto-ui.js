@@ -34,15 +34,57 @@ const QuartoUI = {
 
     this.els.pieces.addEventListener('click', (e) => this.givePiece(e));
     this.els.grid.addEventListener('click', (e) => this.setPiece(e));
+    this.els.grid.addEventListener('keydown', (e) => this.moveOnBoard(e));
+    // Whichever cell gets focus (arrows, click, or the jump after picking a
+    // piece) becomes the board's single tab stop
+    this.els.grid.addEventListener('focusin', (e) => {
+      const cell = e.target.closest('.js-grid-cell');
+      if (cell) this.setBoardTabStop(cell);
+    });
+    this.setBoardTabStop(this.cell(0, 0));
     this.els.quarto.addEventListener('click', () => this.shoutQuarto());
     this.els.draw.addEventListener('click', () => this.declareDraw());
     this.els.helpOpen.addEventListener('click', () => this.els.help.showModal());
+    // Q shouts Quarto from anywhere. Goes through the button, so a disabled
+    // button (game over) ignores it too.
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() !== 'q' || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+      if (this.els.help.open) return;
+      e.preventDefault();
+      this.els.quarto.click();
+    });
     // Tapping the backdrop (outside .help-content) closes the dialog
     this.els.help.addEventListener('click', (e) => {
       if (e.target === this.els.help) this.els.help.close();
     });
 
     this.render();
+  },
+
+  // The board is one tab stop ("roving tabindex"): only one cell is in the
+  // tab order, arrow keys move focus between cells, Tab leaves the board.
+  setBoardTabStop(cell) {
+    for (const other of this.els.grid.querySelectorAll('.js-grid-cell')) {
+      other.tabIndex = other === cell ? 0 : -1;
+    }
+  },
+
+  moveOnBoard(e) {
+    const step = {
+      ArrowUp: [-1, 0],
+      ArrowDown: [1, 0],
+      ArrowLeft: [0, -1],
+      ArrowRight: [0, 1],
+    }[e.key];
+    const cell = e.target.closest('.js-grid-cell');
+    // Leave browser/OS shortcuts such as Alt+Left alone
+    if (!step || !cell || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    // Stop at the edges, no wrapping
+    const clamp = (n) => Math.min(3, Math.max(0, n));
+    const row = clamp(Number(cell.dataset.row) + step[0]);
+    const column = clamp(Number(cell.dataset.column) + step[1]);
+    this.cell(row, column).focus();
   },
 
   // Clones the piece markup from the round/square template in index.html.
@@ -85,6 +127,10 @@ const QuartoUI = {
       const pieceEl = this.els.playbox.firstElementChild;
       cell.appendChild(pieceEl);
       cell.setAttribute('aria-label', `${cell.getAttribute('aria-label')}: ${pieceEl.className.replace('piece ', '')}`);
+      // Next step is picking a piece; with none left (board full), it is
+      // shouting Quarto or calling a draw
+      const nextSlot = this.els.pieces.querySelector('.pool-slot:not(:disabled)');
+      (nextSlot ?? this.els.quarto).focus();
     });
   },
 

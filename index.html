@@ -26,7 +26,7 @@
         </div>
 
         <div class="actions">
-          <button type="button" class="button button-quarto" id="js-quarto">Quarto!</button>
+          <button type="button" class="button button-quarto" id="js-quarto" aria-keyshortcuts="Q">Quarto!</button>
           <button type="button" class="button" id="js-draw" hidden>Draw</button>
           <a id="js-start" class="button" href="?">Restart</a>
         </div>
@@ -97,6 +97,25 @@
         <p>
           If the board fills up without a Quarto, press <strong>Draw</strong>.
         </p>
+
+        <h3>Keyboard</h3>
+        <ul>
+          <li>
+            <kbd>Tab</kbd> moves between the <strong>?</strong> button, the
+            buttons, the pieces and the board.
+          </li>
+          <li>
+            The board is a single stop: use the <strong>arrow keys</strong> to
+            move between its squares.
+          </li>
+          <li>
+            <kbd>Enter</kbd> or <kbd>Space</kbd> picks the focused piece or
+            places it on the focused square. After picking, focus jumps to the
+            first free square; after placing, to the first available piece.
+          </li>
+          <li><kbd>Q</kbd> shouts <strong>Quarto!</strong> from anywhere.</li>
+          <li><kbd>Esc</kbd> closes this help.</li>
+        </ul>
       </div>
     </dialog>
 

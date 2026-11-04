@@ -516,12 +516,16 @@ button {
 
 /* ---------- How to play dialog ----------
  * A modal dialog is rendered above the page, outside the rotated .root, so
- * it gets the same portrait rotation itself. vmax/vmin are the landscape
+ * it gets the same portrait rotation itself. dvmax/dvmin are the landscape
  * width/height in both orientations.
  */
 
 .help {
-    width: min(36rem, 90vmax);
+    /* Fixed distance from the screen edges instead of a max width */
+    --dialog-inset: 1.5rem;
+
+    width: calc(100dvmax - 2 * var(--dialog-inset));
+    max-width: none;
     max-height: none;
     overflow: visible;
     padding: 0;
@@ -545,7 +549,7 @@ button {
 
 /* The content scrolls; the close button stays in the corner above it */
 .help-content {
-    max-height: calc(90vmin - 2px);
+    max-height: calc(100dvmin - 2 * var(--dialog-inset) - 2px);
     overflow: auto;
     padding: 1rem 1.25rem;
     font-size: 0.8rem;
@@ -564,8 +568,17 @@ button {
 }
 
 .help p,
-.help ol {
+.help ol,
+.help ul {
     margin: 0 0 0.5em;
+}
+
+.help kbd {
+    padding: 0.05em 0.35em;
+    border: 1px solid var(--muted);
+    border-radius: 0.25em;
+    font: inherit;
+    font-size: 0.9em;
 }
 
 .help-close {
