@@ -34,14 +34,8 @@ const QuartoUI = {
 
     this.els.pieces.addEventListener('click', (e) => this.givePiece(e));
     this.els.grid.addEventListener('click', (e) => this.setPiece(e));
-    this.els.grid.addEventListener('keydown', (e) => this.moveOnBoard(e));
-    // Whichever cell gets focus (arrows, click, or the jump after picking a
-    // piece) becomes the board's single tab stop
-    this.els.grid.addEventListener('focusin', (e) => {
-      const cell = e.target.closest('.js-grid-cell');
-      if (cell) this.setBoardTabStop(cell);
-    });
-    this.setBoardTabStop(this.cell(0, 0));
+    this.initGridNavigation(this.els.pieces, '.js-piece');
+    this.initGridNavigation(this.els.grid, '.js-grid-cell');
     this.els.quarto.addEventListener('click', () => this.shoutQuarto());
     this.els.draw.addEventListener('click', () => this.declareDraw());
     this.els.helpOpen.addEventListener('click', () => this.els.help.showModal());
@@ -61,30 +55,62 @@ const QuartoUI = {
     this.render();
   },
 
-  // The board is one tab stop ("roving tabindex"): only one cell is in the
-  // tab order, arrow keys move focus between cells, Tab leaves the board.
-  setBoardTabStop(cell) {
-    for (const other of this.els.grid.querySelectorAll('.js-grid-cell')) {
-      other.tabIndex = other === cell ? 0 : -1;
+  // The board and the pool are 4 x 4 grids of buttons in row order, each a
+  // single tab stop ("roving tabindex"): only one item is in the tab order,
+  // arrow keys move focus inside the grid, Tab moves on. Whichever item gets
+  // focus (arrows, click, or the jumps after picking/placing) becomes the
+  // grid's tab stop.
+  initGridNavigation(container, selector) {
+    const items = () => [...container.querySelectorAll(selector)];
+    container.addEventListener('keydown', (e) => this.moveInGrid(e, items()));
+    container.addEventListener('focusin', (e) => {
+      const item = e.target.closest(selector);
+      if (item) this.setTabStop(items(), item);
+    });
+    this.setTabStop(items(), items()[0]);
+  },
+
+  // Used pool slots and occupied board cells are disabled: no clicks, and
+  // arrows/Tab skip them. A disabled item cannot hold the grid's tab stop,
+  // so it moves to the first item still enabled.
+  disableGridItem(container, selector, item) {
+    item.disabled = true;
+    const items = [...container.querySelectorAll(selector)];
+    const firstEnabled = items.find((i) => !i.disabled);
+    if (firstEnabled) this.setTabStop(items, firstEnabled);
+  },
+
+  setTabStop(items, item) {
+    for (const other of items) {
+      other.tabIndex = other === item ? 0 : -1;
     }
   },
 
-  moveOnBoard(e) {
+  // Moves in the arrow's direction, skipping disabled items (pool slots
+  // whose piece is taken). Stops at the edges, no wrapping.
+  moveInGrid(e, items) {
     const step = {
       ArrowUp: [-1, 0],
       ArrowDown: [1, 0],
       ArrowLeft: [0, -1],
       ArrowRight: [0, 1],
     }[e.key];
-    const cell = e.target.closest('.js-grid-cell');
+    const index = items.indexOf(e.target);
     // Leave browser/OS shortcuts such as Alt+Left alone
-    if (!step || !cell || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!step || index === -1 || e.altKey || e.ctrlKey || e.metaKey) return;
     e.preventDefault();
-    // Stop at the edges, no wrapping
-    const clamp = (n) => Math.min(3, Math.max(0, n));
-    const row = clamp(Number(cell.dataset.row) + step[0]);
-    const column = clamp(Number(cell.dataset.column) + step[1]);
-    this.cell(row, column).focus();
+    let row = Math.floor(index / 4);
+    let column = index % 4;
+    for (;;) {
+      row += step[0];
+      column += step[1];
+      if (row < 0 || row > 3 || column < 0 || column > 3) return;
+      const next = items[row * 4 + column];
+      if (!next.disabled) {
+        next.focus();
+        return;
+      }
+    }
   },
 
   // Clones the piece markup from the round/square template in index.html.
@@ -92,6 +118,7 @@ const QuartoUI = {
     const template = document.querySelector(piece.isRound() ? '#js-piece-round' : '#js-piece-square');
     const pieceEl = template.content.firstElementChild.cloneNode(true);
     pieceEl.classList.add(...piece.getPropertyString().split(' '));
+    pieceEl.querySelector('.piece-label').textContent = piece.getPropertyString();
     if (!piece.isHollow()) pieceEl.querySelector('.piece-hole').remove();
     return pieceEl;
   },
@@ -113,7 +140,7 @@ const QuartoUI = {
     this.attempt(() => {
       Quarto.selectPiece(Number(slot.dataset.pieceId));
       this.els.playbox.appendChild(slot.firstElementChild);
-      slot.disabled = true;
+      this.disableGridItem(this.els.pieces, '.js-piece', slot);
       // The focused slot is now disabled; continue on the board instead
       this.els.grid.querySelector('.grid-cell:empty')?.focus();
     });
@@ -127,6 +154,7 @@ const QuartoUI = {
       const pieceEl = this.els.playbox.firstElementChild;
       cell.appendChild(pieceEl);
       cell.setAttribute('aria-label', `${cell.getAttribute('aria-label')}: ${pieceEl.className.replace('piece ', '')}`);
+      this.disableGridItem(this.els.grid, '.js-grid-cell', cell);
       // Next step is picking a piece; with none left (board full), it is
       // shouting Quarto or calling a draw
       const nextSlot = this.els.pieces.querySelector('.pool-slot:not(:disabled)');
@@ -171,16 +199,26 @@ const QuartoUI = {
     const playing = Quarto.status === 'playing';
     const boardFull = Quarto.isBoardFull();
     let text;
+    // Read by screen readers only: which piece is to be played
+    let spoken = '';
     if (!playing) {
       text = 'Game over. Press Restart to play again.';
     } else if (Quarto.phase === 1) {
       text = 'Play the selected piece';
+      spoken = `: ${Quarto.selectedPiece.getPropertyString()}`;
     } else if (boardFull) {
       text = 'Board is full: shout Quarto, or call it a draw';
     } else {
       text = 'Select a piece for next player';
     }
-    this.els.text.textContent = text;
+    // The instructions are a live region: only touch them when the text
+    // changes, so screen readers don't repeat it after every action
+    if (this.els.text.textContent !== text + spoken) {
+      const hidden = document.createElement('span');
+      hidden.className = 'visually-hidden';
+      hidden.textContent = spoken;
+      this.els.text.replaceChildren(text, hidden);
+    }
     this.els.quarto.disabled = !playing;
     this.els.draw.hidden = !(playing && boardFull);
     document.body.classList.toggle('game-over', !playing);

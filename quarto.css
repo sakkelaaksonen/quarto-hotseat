@@ -78,21 +78,25 @@ button {
 
 /* ---------- Page layout ---------- */
 
-.root {
+/* A full-screen landscape "stage": the game (.root) and the help dialog
+   (.help) both use it. Padding keeps --stage-pad from the edges, more where
+   a notch needs it. */
+.root,
+.help {
+    --stage-pad: var(--gap);
+
     position: fixed;
     inset: 0;
     width: 100dvw;
     height: 100dvh;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 30%);
-    padding: max(var(--gap), env(safe-area-inset-top)) max(var(--gap), env(safe-area-inset-right))
-        max(var(--gap), env(safe-area-inset-bottom)) max(var(--gap), env(safe-area-inset-left));
-    gap: var(--gap);
+    padding: max(var(--stage-pad), env(safe-area-inset-top)) max(var(--stage-pad), env(safe-area-inset-right))
+        max(var(--stage-pad), env(safe-area-inset-bottom)) max(var(--stage-pad), env(safe-area-inset-left));
 }
 
-/* Force landscape: rotate the whole layout when the device is portrait */
+/* Force landscape: rotate the whole stage when the device is portrait */
 @media (orientation: portrait) {
-    .root {
+    .root,
+    .help {
         inset: auto;
         top: 0;
         left: 0;
@@ -101,6 +105,12 @@ button {
         transform-origin: top left;
         transform: rotate(90deg) translateY(-100%);
     }
+}
+
+.root {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 30%);
+    gap: var(--gap);
 }
 
 /* ---------- Board ---------- */
@@ -150,6 +160,11 @@ button {
     border-radius: 6%;
     background: var(--cell);
     cursor: pointer;
+}
+
+/* Occupied cells are disabled buttons */
+.grid-cell:disabled {
+    cursor: default;
 }
 
 /* While placing, free cells glow so it is obvious where to tap */
@@ -516,54 +531,69 @@ button {
 
 /* ---------- How to play dialog ----------
  * A modal dialog is rendered above the page, outside the rotated .root, so
- * it gets the same portrait rotation itself. dvmax/dvmin are the landscape
- * width/height in both orientations.
+ * it is its own transparent landscape stage (see .root, .help above) and a
+ * grid centres the visible panel inside it. Tapping the stage around the
+ * panel closes the dialog (quarto-ui.js).
  */
 
 .help {
-    /* Fixed distance from the screen edges instead of a max width */
-    --dialog-inset: 1.5rem;
+    --stage-pad: 1.5rem;
 
-    width: calc(100dvmax - 2 * var(--dialog-inset));
+    /* Undo the browser's own dialog box and centring */
     max-width: none;
     max-height: none;
-    overflow: visible;
-    padding: 0;
-    border: 1px solid var(--muted);
-    border-radius: var(--radius);
-    background: #111;
+    margin: 0;
+    border: none;
+    background: transparent;
     color: var(--fg);
+    overflow: visible;
     user-select: text;
     -webkit-user-select: text;
+}
+
+/* Only while open: display would otherwise override the closed dialog's
+   display: none */
+.help[open] {
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
 }
 
 .help::backdrop {
     background: rgb(0 0 0 / 0.7);
 }
 
-@media (orientation: portrait) {
-    .help {
-        rotate: 90deg;
-    }
+.help-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: 100%;
+    border: 1px solid var(--muted);
+    border-radius: var(--radius);
+    background: #111;
+    overflow: hidden;
 }
 
 /* The content scrolls; the close button stays in the corner above it */
 .help-content {
-    max-height: calc(100dvmin - 2 * var(--dialog-inset) - 2px);
+    min-height: 0;
     overflow: auto;
     padding: 1rem 1.25rem;
-    font-size: 0.8rem;
+    /* The content scrolls anyway, so keep it legible instead of following
+       the screen-scaled root size all the way down */
+    font-size: clamp(16px, 0.8rem, 20px);
     line-height: 1.45;
 }
 
 .help h2 {
     margin: 0 2rem 0.5em 0;
-    font-size: 1.1rem;
+    font-size: 1.375em;
 }
 
 .help h3 {
     margin: 1em 0 0.25em;
-    font-size: 0.9rem;
+    font-size: 1.125em;
     color: var(--accent);
 }
 
@@ -610,7 +640,7 @@ button {
 /* ---------- Interaction feedback ---------- */
 
 @media (hover: hover) {
-    .grid-cell:hover {
+    .grid-cell:not(:disabled):hover {
         background: rgb(247 168 240 / 0.2);
     }
 
@@ -623,7 +653,7 @@ button {
     }
 }
 
-.grid-cell:active,
+.grid-cell:not(:disabled):active,
 .pool-slot:not(:disabled):active {
     background: rgb(247 168 240 / 0.25);
 }
@@ -631,4 +661,29 @@ button {
 :focus-visible {
     outline: 3px solid var(--accent);
     outline-offset: 2px;
+}
+
+/* Free board cells already have an accent border while placing, the same
+   colour as the focus ring; the focused cell's border turns white so the
+   ring stands out from it. (.grid adds specificity to beat the
+   [data-phase="place"] .grid-cell:empty rule.) */
+.grid .grid-cell:focus-visible {
+    border-color: var(--fg);
+}
+
+/* ---------- Screen reader only ----------
+ * Read by screen readers, invisible on screen. Kept last so it wins over
+ * equally specific rules such as .piece > *.
+ */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
