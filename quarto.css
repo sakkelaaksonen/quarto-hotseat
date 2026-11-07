@@ -655,13 +655,35 @@ button {
     outline-offset: 2px;
 }
 
-/* Focused board cell: white ring around a pink border. Free cells already
-   have a pink border while placing, so the white ring is what marks the
-   focused one. (.grid adds specificity to beat the
-   [data-phase="place"] .grid-cell:empty rule.) */
+/* Focused board cell: white ring around a pink border, raised a little off
+   the board. Free cells already have a pink border while placing, so the
+   ring and the lift are what mark the focused one. (.grid adds specificity
+   to beat the [data-phase="place"] .grid-cell:empty rule.)
+   The lift uses the same trick as the pieces: rising by h looks like moving
+   -(sin(tilt-z), cos(tilt-z)) * h * tan(tilt-x) within the board plane. The
+   shadow, offset back down by the same amount, is the raised tile's edge. */
 .grid .grid-cell:focus-visible {
+    --raise: calc(var(--board-cell) * 0.1 * tan(var(--tilt-x)));
+    --raise-x: calc(var(--raise) * sin(var(--tilt-z)));
+    --raise-y: calc(var(--raise) * cos(var(--tilt-z)));
+
+    z-index: 1;
     outline-color: var(--fg);
     border-color: var(--accent);
+    transform: translate(calc(-1 * var(--raise-x)), calc(-1 * var(--raise-y)));
+    box-shadow: var(--raise-x) var(--raise-y) 0 0 color-mix(in srgb, var(--cell-border), #000 40%);
+}
+
+.grid-cell {
+    transition:
+        transform 120ms ease-out,
+        box-shadow 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-cell {
+        transition: none;
+    }
 }
 
 /* Pool slots touch each other, so a ring outside the slot would be covered
