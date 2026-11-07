@@ -114,13 +114,15 @@
  *   ring). Forest has no muted text or border colour, so those are green
  *   greys: muted #a1afa6 (7.8:1), cell borders #778c80 (5.4:1 to the
  *   cell, 5.0:1 to the page).
- * Pieces: light ones in warning yellow #ffbe00, dark ones in primary
- * green #1fb854, both shaded down. Against the cell: yellow 7.7-11.6:1,
- * green 4.4-7.4:1. Hole floors: yellow 4.9:1, green (black) 8.0:1.
- * RELAXED THEME: yellow vs green tops are only 1.6:1 in brightness, so
- * light vs dark relies on hue, which colour-blind players may not see
- * (yellow/green is a red-green colour-blindness pair). Deliberate; the
- * pink and white themes keep a brightness difference (4.4 and 3.4).
+ * Pieces: light ones in neutral-content #cdd3d1 (pale green-grey), dark
+ * ones in primary green #1fb854, both shaded down. Against the cell:
+ * light 7.8-12.7:1, green 4.4-7.4:1. Hole floors: light 5.0:1, green
+ * (black) 8.0:1. Board highlights are warning yellow, apart from the
+ * green.
+ * RELAXED THEME: light vs dark tops are only 1.7:1 in brightness, so
+ * telling them apart relies mostly on hue, which colour-blind players may
+ * not see. Deliberate; the pink and white themes keep a clear brightness
+ * difference (4.4 and 3.4).
  */
 :root[data-theme="green"] {
     --bg: oklch(20.84% 0.008 17.911);
@@ -132,13 +134,16 @@
 
     --cell: oklch(16.203% 0.007 17.911);
     --cell-border: oklch(62% 0.03 160);
-    /* info blue #00b5ff: stands apart from the green pieces; 8.3:1 to the
-       cell, 7.7:1 to the page */
-    --board-accent: oklch(72.06% 0.191 231.6);
+    /* warning yellow #ffbe00: stands apart from the green pieces; 11.6:1
+       to the cell */
+    --board-accent: oklch(84.71% 0.199 83.87);
+    /* Quarto! button in the same yellow, with warning-content black text */
+    --quarto-accent: oklch(84.71% 0.199 83.87);
+    --on-quarto-accent: #000;
 
-    --light-top: oklch(84.71% 0.199 83.87);
-    --light-side-a: oklch(78% 0.18 83.87);
-    --light-side-b: oklch(72% 0.16 83.87);
+    --light-top: oklch(86.139% 0.007 171.364);
+    --light-side-a: oklch(79% 0.007 171.364);
+    --light-side-b: oklch(72% 0.007 171.364);
     --dark-top: oklch(68.628% 0.185 148.958);
     --dark-side-a: oklch(62% 0.17 148.958);
     --dark-side-b: oklch(56% 0.155 148.958);
@@ -570,8 +575,9 @@ button {
     font-weight: 700;
 }
 
-/* Colour theme swatches, right end of the toolbar: squares the height of
-   the other buttons, filled with the theme colour */
+/* Colour theme swatches, right end of the toolbar. Each button is a full
+   button-sized tap target; the coloured square is drawn inside it
+   (::before): full size for the selected theme, smaller for the others. */
 .themes {
     flex: none;
     display: flex;
@@ -579,38 +585,54 @@ button {
 }
 
 .button-theme {
+    position: relative;
     width: var(--button-h);
     height: var(--button-h);
     padding: 0;
-    border: 1px solid var(--fg);
-    border-radius: var(--radius);
+    border: none;
+    background: none;
     cursor: pointer;
 }
 
-/* The selected theme: a ring around the swatch, with a gap */
-.button-theme[aria-pressed="true"] {
-    box-shadow:
-        0 0 0 2px var(--bg),
-        0 0 0 4px var(--fg);
+.button-theme::before {
+    content: "";
+    position: absolute;
+    inset: 22%;
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    background: var(--swatch);
+    transition: inset 120ms ease-out;
+}
+
+.button-theme[aria-pressed="true"]::before {
+    inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button-theme::before {
+        transition: none;
+    }
 }
 
 /* Swatches show their theme's colour, whatever theme is active */
 .theme-pink {
-    background: #f7a8f0;
+    --swatch: #f7a8f0;
 }
 
 .theme-green {
-    background: oklch(68.628% 0.185 148.958);
+    --swatch: oklch(68.628% 0.185 148.958);
 }
 
 .theme-white {
-    background: #fff;
+    --swatch: #fff;
 }
 
+/* Theme accent, unless a theme gives the button its own colour
+   (--quarto-accent / --on-quarto-accent) */
 .button-quarto {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: var(--on-accent);
+    border-color: var(--quarto-accent, var(--accent));
+    background: var(--quarto-accent, var(--accent));
+    color: var(--on-quarto-accent, var(--on-accent));
     font-size: 1.1rem;
     font-weight: 700;
 }
