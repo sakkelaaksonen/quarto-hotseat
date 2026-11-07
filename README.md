@@ -16,7 +16,7 @@ Read [Quarto Rules](https://en.wikipedia.org/wiki/Quarto_%28board_game%29)
 claimed right after placing the piece that completes it, before handing over
 the next piece. Once the next piece is given, that Quarto is lost.
 
-When the board is full, shout Quarto or click **Draw**.
+If the board fills up without a Quarto, the game is a draw.
 
 **NOTE**
 

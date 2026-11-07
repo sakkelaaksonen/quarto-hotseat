@@ -12,51 +12,47 @@
   <body>
     <main class="root">
 
-      <aside class="panel">
-        <header class="status">
-          <div class="title-row">
-            <h1 class="title">Quarto</h1>
-            <button type="button" class="help-open" id="js-help-open" aria-label="How to play">?</button>
-          </div>
-          <p id="js-instructions" class="instructions" aria-live="polite"></p>
-          <p id="js-message" class="message" aria-live="polite"></p>
-        </header>
-
-        <div class="next">
-          <section class="playbox" id="js-playbox" aria-label="Piece to play"></section>
-        </div>
-
+      <header class="status">
+        <h1 class="title">Quarto</h1>
         <div class="actions">
+          <button type="button" class="button button-help" id="js-help-open" aria-label="How to play">?</button>
           <button type="button" class="button button-quarto" id="js-quarto" aria-keyshortcuts="Q">Quarto!</button>
-          <button type="button" class="button" id="js-draw" hidden>Draw</button>
           <a id="js-start" class="button" href="?">Restart</a>
         </div>
+        <p id="js-status" class="status-text" aria-live="polite"></p>
+      </header>
 
-        <div class="pool-area">
+      <!-- Board 3/5 left, pool 2/5 right. The pool comes first in the HTML
+           so keyboard focus reaches it before the board. -->
+      <div class="play-area">
+        <aside class="panel">
           <section class="pieces" id="js-pieces" aria-label="Available pieces"></section>
-        </div>
-      </aside>
+        </aside>
 
-      <section class="board-area" aria-label="Board">
-        <div id="js-grid" class="grid">
-          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="0" aria-label="Row 1, column 1"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="1" aria-label="Row 1, column 2"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="2" aria-label="Row 1, column 3"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="3" aria-label="Row 1, column 4"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="0" aria-label="Row 2, column 1"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="1" aria-label="Row 2, column 2"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="2" aria-label="Row 2, column 3"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="3" aria-label="Row 2, column 4"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="0" aria-label="Row 3, column 1"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="1" aria-label="Row 3, column 2"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="2" aria-label="Row 3, column 3"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="3" aria-label="Row 3, column 4"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="0" aria-label="Row 4, column 1"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="1" aria-label="Row 4, column 2"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="2" aria-label="Row 4, column 3"></button>
-          <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="3" aria-label="Row 4, column 4"></button>
-        </div>
-      </section>
+        <section class="board-area" aria-label="Board">
+          <div id="js-grid" class="grid">
+            <!-- An extra square at column 1, row -1, just behind the board.
+                 First child so the board's pieces paint over it. -->
+            <section class="playbox" id="js-playbox" aria-label="Piece to play"></section>
+            <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="0" aria-label="Row 1, column 1"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="1" aria-label="Row 1, column 2"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="2" aria-label="Row 1, column 3"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="0" data-column="3" aria-label="Row 1, column 4"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="0" aria-label="Row 2, column 1"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="1" aria-label="Row 2, column 2"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="2" aria-label="Row 2, column 3"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="1" data-column="3" aria-label="Row 2, column 4"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="0" aria-label="Row 3, column 1"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="1" aria-label="Row 3, column 2"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="2" aria-label="Row 3, column 3"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="2" data-column="3" aria-label="Row 3, column 4"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="0" aria-label="Row 4, column 1"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="1" aria-label="Row 4, column 2"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="2" aria-label="Row 4, column 3"></button>
+            <button type="button" class="grid-cell js-grid-cell" data-row="3" data-column="3" aria-label="Row 4, column 4"></button>
+          </div>
+        </section>
+      </div>
 
     </main>
 
@@ -97,7 +93,7 @@
 
           <h3>Draw</h3>
           <p>
-            If the board fills up without a Quarto, press <strong>Draw</strong>.
+            If the board fills up without a Quarto, the game is a draw.
           </p>
 
           <h3>Keyboard</h3>

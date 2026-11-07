@@ -8,11 +8,15 @@
 :root {
     color-scheme: dark;
 
-    --bg: #000;
+    /* Page is dark grey, everything pieces stand on (board cells, pool
+       tiles, the selected-piece cell) is pure black: black gives the most
+       contrast room for the dark pieces. #1e1e1e is as light as the page can
+       go with all text at WCAG AAA (muted #aaa 7.2:1). */
+    --bg: #1e1e1e;
     --fg: #fff;
     --muted: #aaa;
     --accent: #f7a8f0;
-    --cell: rgb(255 255 255 / 0.08);
+    --cell: #000;
     --cell-border: #888;
 
     /* Pieces: same footprint for all, height in fractions of a cell */
@@ -21,22 +25,28 @@
     --piece-tall: 60cqw;
     --hole-depth: 6cqw;
     --piece-radius: 5cqw;   /* corner rounding of square pieces */
+    /* Piece colours, contrast vs black (WCAG 1.4.11 asks 3:1): every face
+       passes, dark faces 3.0 / 3.6 / 4.4, light faces well above. Light vs
+       dark tops 4.4. Shading is kept flat on purpose: a wider range would
+       push dark sides under 3:1 or dark tops towards the light pieces. */
     --light-top: #f4f4f4;
-    --light-side-a: #cfcfcf;
-    --light-side-b: #8c8c8c;
-    --dark-top: #5e5e5e;
-    --dark-side-a: #3e3e3e;
-    --dark-side-b: #232323;
+    --light-side-a: #dedede;
+    --light-side-b: #bdbdbd;
+    --dark-top: #727272;
+    --dark-side-a: #646464;
+    --dark-side-b: #5a5a5a;
 
     /* Board tilt. Width is the limiting factor; rotate-z widens the board most */
     --tilt-x: 50deg;
     --tilt-z: 20deg;
-    /* Screen footprint of a 1x1 board at the above tilt (keep in sync) */
-    --footprint-w: 1.28;
-    --footprint-h: 0.82;
-    /* Extra height above the board for tall pieces in the back row,
-       as a fraction of the board side (tall height / 4 * sin(tilt-x)) */
-    --lift-room: 0.12;
+    /* Screen size of everything drawn on the board plane, in board sides:
+       the board, the selected-piece square behind it (column 1, row -1) and
+       tall pieces rising from the back. The board's centre sits
+       --block-offset below the block's centre. Computed for the tilt above
+       and the piece heights; recompute if those change. */
+    --block-w: 1.282;
+    --block-h: 1.002;
+    --block-offset: 0.089;
 
     --gap: clamp(0.5rem, 2vmin, 1.25rem);
     --radius: 0.5rem;
@@ -107,44 +117,87 @@ button {
     }
 }
 
+/* Toolbar on top, play area below */
 .root {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 30%);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: var(--gap);
 }
 
-/* ---------- Board ---------- */
+/* ---------- Play area ----------
+ * Board 3/5 left, pool 2/5 right, bottom-aligned. One size rules
+ * both: --side (board side) is the largest at which the board block fits
+ * the board column and the play area height, and the pool tiles are the
+ * board's cell size, so a piece is the same size in the pool and on the
+ * board. HTML order is pool, board, so keyboard focus reaches the pool
+ * first.
+ */
 
-/* The panel comes first in the HTML so keyboard focus starts there
-   ("?", buttons, pieces) and reaches the board last. Visually the board
-   stays on the left. */
+.play-area {
+    min-height: 0;
+    container-type: size;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    column-gap: var(--gap);
+    /* Bottom-aligned: the board block's bottom is the board's lowest corner
+       (the extra square and tall pieces only add height above), so the
+       board and the pool's last row line up */
+    align-items: end;
+}
+
 .panel {
     grid-column: 2;
     grid-row: 1;
+    display: grid;
+    justify-items: center;
 }
 
 .board-area {
     grid-column: 1;
     grid-row: 1;
     position: relative;
-    container-type: size;
+    height: calc(var(--side) * var(--block-h));
+}
+
+/* Registered as lengths so they are computed once, against the play area,
+   and inherit as plain lengths (unregistered custom properties inherit as
+   formulas and would re-resolve cq units against nested containers). */
+@property --side {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+}
+
+@property --board-cell {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+}
+
+/* Computed on both columns against the play area, so they are identical.
+   The board column is 3/5 of the width left after the column gap. */
+.board-area,
+.panel {
+    --side: min((100cqw - var(--gap)) * 3 / 5 / var(--block-w), 100cqh / var(--block-h));
+    --board-pad: calc(var(--side) * 0.02);
+    --board-gap: calc(var(--side) * 0.03);
+    --board-cell: calc((var(--side) - 2 * var(--board-pad) - 3 * var(--board-gap)) / 4);
+    --cell-border-w: max(2px, var(--board-cell) * 0.035);
 }
 
 .grid {
-    /* Largest board whose tilted footprint fits the board area */
-    --side: min(100cqw / var(--footprint-w), 100cqh / (var(--footprint-h) + var(--lift-room)));
-
     position: absolute;
-    /* Shifted down so pieces rising off the back row have room too */
-    top: calc(50% + var(--side) * var(--lift-room) / 2);
+    /* Board centre, within the board area (which is exactly the block):
+       a little below the block's centre */
+    top: calc(var(--side) * (var(--block-h) / 2 + var(--block-offset)));
     left: 50%;
     width: var(--side);
     height: var(--side);
     margin: calc(var(--side) / -2) 0 0 calc(var(--side) / -2);
     display: grid;
     grid-template: repeat(4, 1fr) / repeat(4, 1fr);
-    gap: 3%;
-    padding: 2%;
+    gap: var(--board-gap);
+    padding: var(--board-pad);
     /* One flat transform for the whole board: cells and pieces are drawn
        flat, then tilted together. Do not add transform-style: preserve-3d,
        it makes cells and board coplanar in 3D and breaks click hit-testing. */
@@ -156,7 +209,7 @@ button {
     display: grid;
     place-items: center;
     padding: 0;
-    border: max(2px, 0.6cqmin) solid var(--cell-border);
+    border: var(--cell-border-w) solid var(--cell-border);
     border-radius: 6%;
     background: var(--cell);
     cursor: pointer;
@@ -172,9 +225,12 @@ button {
     border-color: var(--accent);
 }
 
+/* Winning line: outlined, not filled, so its pieces keep their contrast
+   against the cell */
 .grid-cell.winning {
     border-color: var(--accent);
-    background: rgb(247 168 240 / 0.35);
+    /* Inner ring as wide as the border: twice the normal border in total */
+    box-shadow: inset 0 0 0 var(--cell-border-w) var(--accent);
 }
 
 /* ---------- Pieces ----------
@@ -244,9 +300,6 @@ button {
     border-radius: 50%;
 }
 
-.dark .piece-top {
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
-}
 
 /* Round: cylinder side, shaded across its width */
 .piece-body {
@@ -317,22 +370,21 @@ button {
    pieces) is the inner wall at the back. The front rim hides the rest. */
 .piece-hole {
     --d: calc(var(--hole-depth) * tan(var(--tilt-x)));
-    --rim: 0 0 0 0 transparent;
+    --hole-floor: color-mix(in srgb, var(--top), #000 60%);
 
     position: absolute;
     display: block;
     inset: 25%;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--top), #000 60%);
+    background: var(--hole-floor);
     box-shadow:
         inset calc(var(--d) * sin(var(--tilt-z))) calc(var(--d) * cos(var(--tilt-z))) 0 0
-            color-mix(in srgb, var(--top), #000 35%),
-        inset var(--rim);
+            color-mix(in srgb, var(--top), #000 35%);
 }
 
-/* Keep the hole readable on dark pieces */
+/* Black floor on dark pieces: 4.1:1 against the dark top */
 .dark .piece-hole {
-    --rim: 0 0 0 1px rgb(255 255 255 / 0.25);
+    --hole-floor: #000;
 }
 
 /* Outside the board, pieces get the board's tilt themselves so they look
@@ -343,44 +395,41 @@ button {
         rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
 }
 
-/* The selected piece stands on a tilted square drawn like a board cell.
-   Square and piece share one transform, so the piece sits on it exactly as
-   on the board. Smaller scale than the pool so the whole square fits; the
-   shift is fixed (room for a tall piece) so the square never moves. */
+/* The selected piece: an extra square of the board itself, at column 1,
+   row -1 (just behind the first row). It lives inside .grid, on the same
+   lattice as the cells, so it shares the board's tilt and looks exactly
+   like a board square; its piece is drawn just as it will be on the board.
+   Absolutely positioned, so it takes no part in the 4 x 4 grid. */
 .playbox {
-    --playbox-tilt: translateY(calc(var(--piece-tall) * sin(var(--tilt-x)) * 0.75 / 2)) scale(0.75)
-        rotateX(var(--tilt-x)) rotateZ(var(--tilt-z));
-}
-
-.playbox::before {
-    content: "";
     position: absolute;
-    inset: 0;
-    border: 2px solid var(--cell-border);
+    left: calc(var(--board-pad) + 1 * (var(--board-cell) + var(--board-gap)));
+    top: calc(var(--board-pad) - 1 * (var(--board-cell) + var(--board-gap)));
+    width: var(--board-cell);
+    height: var(--board-cell);
+    border: var(--cell-border-w) solid var(--cell-border);
     border-radius: 6%;
     background: var(--cell);
-    transform: var(--playbox-tilt);
 }
 
-.playbox .piece {
-    transform: var(--playbox-tilt);
+/* ---------- Pool ----------
+ * Tiles are the board's cell size, unless 4 of them don't fit the pool
+ * column (2/5 of the width after the column gap).
+ */
+
+.pieces {
+    --slot: min(var(--board-cell), (100cqw - var(--gap)) * 2 / 5 / 4);
 }
 
-/* ---------- Side panel ---------- */
-
-.panel {
-    min-height: 0;
-    display: grid;
-    grid-template:
-        "status  status" auto
-        "next    actions" auto
-        "pool    pool" minmax(0, 1fr)
-        / auto 1fr;
-    gap: var(--gap);
-}
-
+/* ---------- Top toolbar ----------
+ * Title, the button group, then the status line, all on one line, so
+ * changing texts never resize the play area.
+ */
 .status {
-    grid-area: status;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+    white-space: nowrap;
 }
 
 .title {
@@ -392,76 +441,22 @@ button {
     color: var(--muted);
 }
 
-.title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-/* Small round "?" next to the title. The invisible ::after extends the tap
-   target well beyond the visible circle. */
-.help-open {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    padding: 0;
-    border: 1px solid var(--muted);
-    border-radius: 50%;
-    background: none;
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.help-open::after {
-    content: "";
-    position: absolute;
-    inset: -0.6rem;
-}
-
-.instructions {
-    margin: 0.2em 0 0;
+/* One status line: instruction, feedback or result. Takes the remaining
+   width; text too long for it is cut with an ellipsis instead of wrapping
+   (screen readers still get all of it). */
+.status-text {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 1.1rem;
     font-weight: 700;
 }
 
-.message {
-    min-height: 1.3em;
-    margin: 0.2em 0 0;
-    font-size: 0.9rem;
-    color: var(--accent);
-}
-
-.next {
-    grid-area: next;
-}
-
-/* Number of visible buttons in .actions; Draw appears when the board is full */
-.panel {
-    --buttons: 2;
-}
-
-.panel:has(#js-draw:not([hidden])) {
-    --buttons: 3;
-}
-
-/* Square, exactly as tall as the stacked buttons next to it */
-.playbox {
-    position: relative;
-    display: grid;
-    place-items: center;
-    height: calc(var(--buttons) * var(--button-h) + (var(--buttons) - 1) * var(--actions-gap));
-    aspect-ratio: 1;
-}
-
 .actions {
-    grid-area: actions;
+    flex: none;
     display: flex;
-    flex-direction: column;
     gap: var(--actions-gap);
 }
 
@@ -480,8 +475,11 @@ button {
     cursor: pointer;
 }
 
-.button[hidden] {
-    display: none;
+/* "?": a square button in the group */
+.button-help {
+    width: var(--button-h);
+    padding: 0;
+    font-weight: 700;
 }
 
 .button-quarto {
@@ -497,21 +495,10 @@ button {
     cursor: default;
 }
 
-.pool-area {
-    grid-area: pool;
-    min-height: 0;
-    container-type: size;
-}
-
 .pieces {
-    /* 4 x 4 slots, as large as the space allows */
-    --slot: min(25cqw, 25cqh);
     display: grid;
     grid-template-columns: repeat(4, var(--slot));
     grid-auto-rows: var(--slot);
-    justify-content: center;
-    height: 100%;
-    align-content: center;
 }
 
 .pool-slot {
@@ -521,11 +508,16 @@ button {
     padding: 0;
     border: 2px solid transparent;
     border-radius: var(--radius);
-    background: none;
+    /* Pieces stand on black here too, like on the board. Clipped inside
+       the transparent border, so neighbouring tiles keep a small gap. */
+    background: var(--cell);
+    background-clip: padding-box;
     cursor: pointer;
 }
 
+/* Taken: no tile, the slot is just empty space */
 .pool-slot:disabled {
+    background: none;
     cursor: default;
 }
 

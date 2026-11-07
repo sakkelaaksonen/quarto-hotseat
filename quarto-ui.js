@@ -1,9 +1,13 @@
+import { MESSAGES, TRAIT_NAMES } from './messages.js';
 import Quarto from './quarto-engine.js';
 
 // The UI only translates clicks into engine calls and renders engine state.
 // All game rules live in quarto-engine.js.
 const QuartoUI = {
   els: null,
+  // Feedback or result shown in the status line instead of the instruction,
+  // until the next successful action
+  message: '',
 
   init() {
     Quarto.start();
@@ -13,11 +17,9 @@ const QuartoUI = {
       grid: $('#js-grid'),
       playbox: $('#js-playbox'),
       quarto: $('#js-quarto'),
-      draw: $('#js-draw'),
       help: $('#js-help'),
       helpOpen: $('#js-help-open'),
-      text: $('#js-instructions'),
-      message: $('#js-message'),
+      status: $('#js-status'),
     };
 
     // Each pool slot is a button wrapping the piece. The slot stays in
@@ -37,7 +39,6 @@ const QuartoUI = {
     this.initGridNavigation(this.els.pieces, '.js-piece');
     this.initGridNavigation(this.els.grid, '.js-grid-cell');
     this.els.quarto.addEventListener('click', () => this.shoutQuarto());
-    this.els.draw.addEventListener('click', () => this.declareDraw());
     this.els.helpOpen.addEventListener('click', () => this.els.help.showModal());
     // Q shouts Quarto from anywhere. Goes through the button, so a disabled
     // button (game over) ignores it too.
@@ -156,7 +157,7 @@ const QuartoUI = {
       cell.setAttribute('aria-label', `${cell.getAttribute('aria-label')}: ${pieceEl.className.replace('piece ', '')}`);
       this.disableGridItem(this.els.grid, '.js-grid-cell', cell);
       // Next step is picking a piece; with none left (board full), it is
-      // shouting Quarto or calling a draw
+      // shouting Quarto
       const nextSlot = this.els.pieces.querySelector('.pool-slot:not(:disabled)');
       (nextSlot ?? this.els.quarto).focus();
     });
@@ -170,57 +171,55 @@ const QuartoUI = {
           this.cell(row, column).classList.add('winning');
         }
       }
-      const kinds = lines.map((l) => `${l.properties.join(' & ')} ${l.line}`).join(', ');
-      this.showMessage(`Quarto! ${kinds}. You win!`);
+      // Just the shared traits, each once, e.g. "Quarto! Darks & Hollows"
+      const traits = new Set(lines.flatMap((l) => l.properties));
+      this.showMessage(MESSAGES.quarto([...traits].map((t) => TRAIT_NAMES[t]).join(' & ')));
     } else if (result === 'draw') {
-      this.showMessage('No Quarto there, and the board is full. It is a draw.');
+      this.showMessage(MESSAGES.noQuartoDraw);
     } else if (result === 'no-quarto') {
-      this.showMessage('No Quarto there.');
+      this.showMessage(MESSAGES.noQuarto);
     } else {
-      this.showMessage('Quarto can only be shouted right after placing a piece.');
+      this.showMessage(MESSAGES.shoutTiming);
     }
     this.render();
-  },
-
-  declareDraw() {
-    this.attempt(() => Quarto.declareDraw());
-    if (Quarto.status === 'draw') this.showMessage('It is a draw.');
   },
 
   cell(row, column) {
     return this.els.grid.querySelector(`[data-row="${row}"][data-column="${column}"]`);
   },
 
+  // Shown on the next render(); '' goes back to the instruction
   showMessage(text) {
-    this.els.message.textContent = text;
+    this.message = text;
   },
 
+  // One status line: the current message if there is one (errors, results),
+  // otherwise what to do next. At game end the result message stays.
   render() {
     const playing = Quarto.status === 'playing';
     const boardFull = Quarto.isBoardFull();
     let text;
     // Read by screen readers only: which piece is to be played
     let spoken = '';
-    if (!playing) {
-      text = 'Game over. Press Restart to play again.';
+    if (this.message || !playing) {
+      text = this.message;
     } else if (Quarto.phase === 1) {
-      text = 'Play the selected piece';
+      text = MESSAGES.playPiece;
       spoken = `: ${Quarto.selectedPiece.getPropertyString()}`;
     } else if (boardFull) {
-      text = 'Board is full: shout Quarto, or call it a draw';
+      text = MESSAGES.boardFull;
     } else {
-      text = 'Select a piece for next player';
+      text = MESSAGES.selectPiece;
     }
-    // The instructions are a live region: only touch them when the text
-    // changes, so screen readers don't repeat it after every action
-    if (this.els.text.textContent !== text + spoken) {
+    // The status line is a live region: only touch it when the text changes,
+    // so screen readers don't repeat it after every action
+    if (this.els.status.textContent !== text + spoken) {
       const hidden = document.createElement('span');
       hidden.className = 'visually-hidden';
       hidden.textContent = spoken;
-      this.els.text.replaceChildren(text, hidden);
+      this.els.status.replaceChildren(text, hidden);
     }
     this.els.quarto.disabled = !playing;
-    this.els.draw.hidden = !(playing && boardFull);
     document.body.classList.toggle('game-over', !playing);
     // Lets the CSS hint where the next tap goes: the pool or the board
     document.body.dataset.phase = !playing ? 'over' : Quarto.phase === 1 ? 'place' : 'give';
