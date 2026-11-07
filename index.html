@@ -6,6 +6,18 @@
     <meta name="description" content="A hot seat Quarto for two human players on a phone, tablet or desktop"/>
     <meta name="theme-color" content="#000000">
     <title>Quarto Hot Seat</title>
+    <!-- Apply the remembered colour theme before the first paint (the
+         module below runs too late and would flash the default theme) -->
+    <script>
+      let theme = 'pink';
+      try {
+        const saved = localStorage.getItem('quarto-theme');
+        if (['pink', 'green', 'white'].includes(saved)) theme = saved;
+      } catch {
+        // Storage unavailable: default theme
+      }
+      document.documentElement.dataset.theme = theme;
+    </script>
     <script type="module" src="quarto-ui.js"></script>
     <link rel="stylesheet" href="quarto.css">
   </head>
@@ -22,6 +34,12 @@
           <a id="js-start" class="button" href="?">Restart</a>
         </div>
         <p id="js-status" class="status-text" aria-live="polite"></p>
+        <!-- Colour theme choice; sets data-theme on <html> (quarto-ui.js) -->
+        <div class="themes" id="js-themes">
+          <button type="button" class="button-theme theme-pink" data-theme="pink" aria-label="Pink colour theme" aria-pressed="false"></button>
+          <button type="button" class="button-theme theme-green" data-theme="green" aria-label="Green, dark forest colour theme" aria-pressed="false"></button>
+          <button type="button" class="button-theme theme-white" data-theme="white" aria-label="White, light colour theme" aria-pressed="false"></button>
+        </div>
       </header>
 
       <!-- Board 3/5 left, pool 2/5 right. The pool comes first in the HTML

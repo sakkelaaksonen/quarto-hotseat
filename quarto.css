@@ -16,8 +16,14 @@
     --fg: #fff;
     --muted: #aaa;
     --accent: #f7a8f0;
+    --on-accent: #000; /* text on an accent background */
+    --panel: #111; /* help dialog */
     --cell: #000;
     --cell-border: #888;
+    /* Highlights on the board (free cells, focus, winning line). The board
+       stays black in every theme, so this keeps a colour that works on
+       black (11.8:1) even when --accent changes. */
+    --board-accent: #f7a8f0;
 
     /* Pieces: same footprint for all, height in fractions of a cell */
     --piece-footprint: 64cqw;
@@ -35,6 +41,8 @@
     --dark-top: #727272;
     --dark-side-a: #646464;
     --dark-side-b: #5a5a5a;
+    --dark-hole-floor: #000; /* 4.4:1 against the dark top */
+    --hole-darken: 60%; /* light pieces' hole floor: their top, darkened */
 
     /* Board tilt. Width is the limiting factor; rotate-z widens the board most */
     --tilt-x: 50deg;
@@ -55,6 +63,85 @@
 
     /* vmin is the landscape height in both orientations */
     font-size: clamp(14px, 3.4vmin, 26px);
+}
+
+/* ---------- Themes ----------
+ * Set by the swatches as data-theme on <html> (quarto-ui.js, remembered in
+ * localStorage). "pink" is the default above.
+ *
+ * White: light mode. White page; colours next to it that would fail the
+ * contrast rules are darkened or reversed (WCAG AAA for text):
+ *   text #000 21:1, muted #555 7.5:1, accent #8e1a7f 8.1:1 (white text on
+ *   it 8.1:1), help panel #f2f2f2.
+ * Board, pool tiles and the selected-piece square are light grey #e6e6e6
+ * with dark borders (#444: 7.8:1 to the cell, 9.7:1 to the page). White
+ * pieces cannot reach 3:1 on light grey, so "light" pieces are pink (the
+ * game's pink hue, deepened) and "dark" pieces dark grey. Against the
+ * cell: pink faces 3.4 / 4.1 / 5.0, grey faces 11.5-13.9; pink vs grey
+ * tops 3.4. Board highlights use the dark accent (6.5:1 to the cell).
+ * Hole floors: pink pieces 3.7:1 (top darkened 70%), grey pieces (light
+ * grey floor) 5.1:1.
+ */
+:root[data-theme="white"] {
+    color-scheme: light;
+
+    --bg: #fff;
+    --fg: #000;
+    --muted: #555;
+    --accent: #8e1a7f;
+    --on-accent: #fff;
+    --panel: #f2f2f2;
+
+    --cell: #e6e6e6;
+    --cell-border: #444;
+    --board-accent: #8e1a7f;
+
+    --light-top: #ce3bc2;
+    --light-side-a: #b635ab;
+    --light-side-b: #9d3494;
+    --dark-top: #2a2a2a;
+    --dark-side-a: #222;
+    --dark-side-b: #1a1a1a;
+    --dark-hole-floor: #9a9a9a;
+    --hole-darken: 70%;
+}
+
+/* Green: dark mode in daisyUI's "forest" colours
+ * (daisyui.com/docs/themes, values from its source, oklch kept as is):
+ *   page base-100 #1b1717, help panel base-200 #161212, cells and tiles
+ *   base-300 #110d0d, text base-content #cac9c9 (10.8:1), accent primary
+ *   #1fb854 with black text (8.0:1; 7.1:1 as help headings, 6.8:1 as focus
+ *   ring). Forest has no muted text or border colour, so those are green
+ *   greys: muted #a1afa6 (7.8:1), cell borders #778c80 (5.4:1 to the
+ *   cell, 5.0:1 to the page).
+ * Pieces: light ones in warning yellow #ffbe00, dark ones in primary
+ * green #1fb854, both shaded down. Against the cell: yellow 7.7-11.6:1,
+ * green 4.4-7.4:1. Hole floors: yellow 4.9:1, green (black) 8.0:1.
+ * RELAXED THEME: yellow vs green tops are only 1.6:1 in brightness, so
+ * light vs dark relies on hue, which colour-blind players may not see
+ * (yellow/green is a red-green colour-blindness pair). Deliberate; the
+ * pink and white themes keep a brightness difference (4.4 and 3.4).
+ */
+:root[data-theme="green"] {
+    --bg: oklch(20.84% 0.008 17.911);
+    --fg: oklch(83.768% 0.001 17.911);
+    --muted: oklch(74% 0.02 160);
+    --accent: oklch(68.628% 0.185 148.958);
+    --on-accent: #000;
+    --panel: oklch(18.522% 0.007 17.911);
+
+    --cell: oklch(16.203% 0.007 17.911);
+    --cell-border: oklch(62% 0.03 160);
+    /* info blue #00b5ff: stands apart from the green pieces; 8.3:1 to the
+       cell, 7.7:1 to the page */
+    --board-accent: oklch(72.06% 0.191 231.6);
+
+    --light-top: oklch(84.71% 0.199 83.87);
+    --light-side-a: oklch(78% 0.18 83.87);
+    --light-side-b: oklch(72% 0.16 83.87);
+    --dark-top: oklch(68.628% 0.185 148.958);
+    --dark-side-a: oklch(62% 0.17 148.958);
+    --dark-side-b: oklch(56% 0.155 148.958);
 }
 
 *,
@@ -222,15 +309,15 @@ button {
 
 /* While placing, free cells glow so it is obvious where to tap */
 [data-phase="place"] .grid-cell:empty {
-    border-color: var(--accent);
+    border-color: var(--board-accent);
 }
 
 /* Winning line: outlined, not filled, so its pieces keep their contrast
    against the cell */
 .grid-cell.winning {
-    border-color: var(--accent);
+    border-color: var(--board-accent);
     /* Inner ring as wide as the border: twice the normal border in total */
-    box-shadow: inset 0 0 0 var(--cell-border-w) var(--accent);
+    box-shadow: inset 0 0 0 var(--cell-border-w) var(--board-accent);
 }
 
 /* ---------- Pieces ----------
@@ -370,7 +457,7 @@ button {
    pieces) is the inner wall at the back. The front rim hides the rest. */
 .piece-hole {
     --d: calc(var(--hole-depth) * tan(var(--tilt-x)));
-    --hole-floor: color-mix(in srgb, var(--top), #000 60%);
+    --hole-floor: color-mix(in srgb, var(--top), #000 var(--hole-darken));
 
     position: absolute;
     display: block;
@@ -382,9 +469,10 @@ button {
             color-mix(in srgb, var(--top), #000 35%);
 }
 
-/* Black floor on dark pieces: 4.1:1 against the dark top */
+/* Dark pieces get a theme-set floor: darkening their top would not give
+   enough contrast (black in dark mode, light grey in light mode) */
 .dark .piece-hole {
-    --hole-floor: #000;
+    --hole-floor: var(--dark-hole-floor);
 }
 
 /* Outside the board, pieces get the board's tilt themselves so they look
@@ -482,10 +570,47 @@ button {
     font-weight: 700;
 }
 
+/* Colour theme swatches, right end of the toolbar: squares the height of
+   the other buttons, filled with the theme colour */
+.themes {
+    flex: none;
+    display: flex;
+    gap: var(--actions-gap);
+}
+
+.button-theme {
+    width: var(--button-h);
+    height: var(--button-h);
+    padding: 0;
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+/* The selected theme: a ring around the swatch, with a gap */
+.button-theme[aria-pressed="true"] {
+    box-shadow:
+        0 0 0 2px var(--bg),
+        0 0 0 4px var(--fg);
+}
+
+/* Swatches show their theme's colour, whatever theme is active */
+.theme-pink {
+    background: #f7a8f0;
+}
+
+.theme-green {
+    background: oklch(68.628% 0.185 148.958);
+}
+
+.theme-white {
+    background: #fff;
+}
+
 .button-quarto {
     border-color: var(--accent);
     background: var(--accent);
-    color: #000;
+    color: var(--on-accent);
     font-size: 1.1rem;
     font-weight: 700;
 }
@@ -563,7 +688,7 @@ button {
     max-height: 100%;
     border: 1px solid var(--muted);
     border-radius: var(--radius);
-    background: #111;
+    background: var(--panel);
     overflow: hidden;
 }
 
@@ -615,7 +740,7 @@ button {
     padding: 0;
     border: 1px solid var(--muted);
     border-radius: 50%;
-    background: #111;
+    background: var(--panel);
     color: var(--fg);
     font-size: 1.2rem;
     line-height: 1;
@@ -633,7 +758,7 @@ button {
 
 @media (hover: hover) {
     .grid-cell:not(:disabled):hover {
-        background: rgb(247 168 240 / 0.2);
+        background: color-mix(in srgb, var(--board-accent) 20%, var(--cell));
     }
 
     .pool-slot:not(:disabled):hover {
@@ -647,7 +772,7 @@ button {
 
 .grid-cell:not(:disabled):active,
 .pool-slot:not(:disabled):active {
-    background: rgb(247 168 240 / 0.25);
+    background: color-mix(in srgb, var(--board-accent) 25%, var(--cell));
 }
 
 :focus-visible {
@@ -669,7 +794,7 @@ button {
 
     z-index: 1;
     outline-color: var(--fg);
-    border-color: var(--accent);
+    border-color: var(--board-accent);
     transform: translate(calc(-1 * var(--raise-x)), calc(-1 * var(--raise-y)));
     box-shadow: var(--raise-x) var(--raise-y) 0 0 color-mix(in srgb, var(--cell-border), #000 40%);
 }

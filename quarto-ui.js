@@ -21,6 +21,7 @@ const QuartoUI = {
       help: $('#js-help'),
       helpOpen: $('#js-help-open'),
       status: $('#js-status'),
+      themes: $('#js-themes'),
     };
 
     // Each pool slot is a button wrapping the piece. The slot stays in
@@ -49,6 +50,13 @@ const QuartoUI = {
       e.preventDefault();
       this.els.quarto.click();
     });
+    this.els.themes.addEventListener('click', (e) => {
+      const swatch = e.target.closest('[data-theme]');
+      if (swatch) this.setTheme(swatch.dataset.theme);
+    });
+    // The inline script in index.html already applied the remembered theme
+    this.setTheme(document.documentElement.dataset.theme);
+
     // Tapping the backdrop (outside .help-content) closes the dialog
     this.els.help.addEventListener('click', (e) => {
       if (e.target === this.els.help) this.els.help.close();
@@ -112,6 +120,21 @@ const QuartoUI = {
         next.focus();
         return;
       }
+    }
+  },
+
+  // Colour theme: data-theme on <html> drives the CSS (see Themes in
+  // quarto.css), the matching swatch is marked pressed, and the choice is
+  // remembered for next time.
+  setTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    for (const swatch of this.els.themes.querySelectorAll('[data-theme]')) {
+      swatch.setAttribute('aria-pressed', String(swatch.dataset.theme === theme));
+    }
+    try {
+      localStorage.setItem('quarto-theme', theme);
+    } catch {
+      // Storage unavailable (private mode etc.): the theme just isn't remembered
     }
   },
 
