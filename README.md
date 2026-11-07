@@ -30,7 +30,10 @@ Also, unlike most implementations I have seen,in my game you really have to shou
 No build step. The game uses native ES modules, so it must be served over HTTP
 (opening `index.html` via `file://` will not work):
 
-    npm run serve        # python3 -m http.server 8000 → http://localhost:8000
+    npm run serve        # dev server, caching off → http://localhost:8000
+
+The dev server (`scripts/serve.js`, no dependencies) also listens on the local
+network, so phones and tablets can open `http://<your computer's IP>:8000`.
 
 Requires Node 22+ for tooling:
 

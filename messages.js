@@ -8,9 +8,10 @@ export const MESSAGES = {
   boardFull: 'Board is full.',
 
   // Shouting Quarto
-  quarto: (traits) => `Quarto! ${traits}`,
+  quarto: (traits) => `Quarto of ${traits}`,
   noQuarto: 'No Quarto there',
   noQuartoDraw: 'No Quarto. Draw',
+  // Screen readers only: why the Quarto! button is disabled
   shoutTiming: 'Shout Quarto after placing a piece',
 };
 

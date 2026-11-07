@@ -16,7 +16,9 @@
         <h1 class="title">Quarto</h1>
         <div class="actions">
           <button type="button" class="button button-help" id="js-help-open" aria-label="How to play">?</button>
-          <button type="button" class="button button-quarto" id="js-quarto" aria-keyshortcuts="Q">Quarto!</button>
+          <button type="button" class="button button-quarto" id="js-quarto" aria-keyshortcuts="Q" aria-describedby="js-quarto-hint">Quarto!</button>
+          <!-- Why Quarto! is disabled, for screen readers; filled by quarto-ui.js -->
+          <span id="js-quarto-hint" class="visually-hidden"></span>
           <a id="js-start" class="button" href="?">Restart</a>
         </div>
         <p id="js-status" class="status-text" aria-live="polite"></p>

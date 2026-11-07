@@ -17,6 +17,7 @@ const QuartoUI = {
       grid: $('#js-grid'),
       playbox: $('#js-playbox'),
       quarto: $('#js-quarto'),
+      quartoHint: $('#js-quarto-hint'),
       help: $('#js-help'),
       helpOpen: $('#js-help-open'),
       status: $('#js-status'),
@@ -40,8 +41,8 @@ const QuartoUI = {
     this.initGridNavigation(this.els.grid, '.js-grid-cell');
     this.els.quarto.addEventListener('click', () => this.shoutQuarto());
     this.els.helpOpen.addEventListener('click', () => this.els.help.showModal());
-    // Q shouts Quarto from anywhere. Goes through the button, so a disabled
-    // button (game over) ignores it too.
+    // Q shouts Quarto from anywhere. Goes through the button, so whenever
+    // the button is disabled (no shout allowed) Q does nothing either.
     document.addEventListener('keydown', (e) => {
       if (e.key.toLowerCase() !== 'q' || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
       if (this.els.help.open) return;
@@ -178,9 +179,8 @@ const QuartoUI = {
       this.showMessage(MESSAGES.noQuartoDraw);
     } else if (result === 'no-quarto') {
       this.showMessage(MESSAGES.noQuarto);
-    } else {
-      this.showMessage(MESSAGES.shoutTiming);
     }
+    // 'not-allowed' cannot happen: the button is disabled then (render)
     this.render();
   },
 
@@ -219,7 +219,12 @@ const QuartoUI = {
       hidden.textContent = spoken;
       this.els.status.replaceChildren(text, hidden);
     }
-    this.els.quarto.disabled = !playing;
+    // Quarto! only when a shout is allowed: right after placing a piece,
+    // until the next piece is picked. While disabled mid-game, screen
+    // readers get the reason as the button's description.
+    const canShout = playing && Quarto.canClaim;
+    this.els.quarto.disabled = !canShout;
+    this.els.quartoHint.textContent = playing && !canShout ? MESSAGES.shoutTiming : '';
     document.body.classList.toggle('game-over', !playing);
     // Lets the CSS hint where the next tap goes: the pool or the board
     document.body.dataset.phase = !playing ? 'over' : Quarto.phase === 1 ? 'place' : 'give';

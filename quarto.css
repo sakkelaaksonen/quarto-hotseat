@@ -655,12 +655,20 @@ button {
     outline-offset: 2px;
 }
 
-/* Free board cells already have an accent border while placing, the same
-   colour as the focus ring; the focused cell's border turns white so the
-   ring stands out from it. (.grid adds specificity to beat the
+/* Focused board cell: white ring around a pink border. Free cells already
+   have a pink border while placing, so the white ring is what marks the
+   focused one. (.grid adds specificity to beat the
    [data-phase="place"] .grid-cell:empty rule.) */
 .grid .grid-cell:focus-visible {
-    border-color: var(--fg);
+    outline-color: var(--fg);
+    border-color: var(--accent);
+}
+
+/* Pool slots touch each other, so a ring outside the slot would be covered
+   by the next slot. Draw it inside: over the 2px transparent border and
+   1px into the tile. */
+.pool-slot:focus-visible {
+    outline-offset: -3px;
 }
 
 /* ---------- Screen reader only ----------
